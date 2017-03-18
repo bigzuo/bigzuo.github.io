@@ -346,11 +346,11 @@
 
       
         
-          <h2 id="Kafka-producer-发送效率低下问题解决与原因分析"><a href="#Kafka-producer-发送效率低下问题解决与原因分析" class="headerlink" title="Kafka producer 发送效率低下问题解决与原因分析"></a>Kafka producer 发送效率低下问题解决与原因分析</h2><blockquote>
-<p>原创文章，如有疑问，请联系<a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x7a;&#117;&#111;&#100;&#x65;&#106;&#x75;&#110;&#x35;&#57;&#53;&#64;&#112;&#x69;&#110;&#x67;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;&#x2e;&#x63;&#110;">&#x7a;&#117;&#111;&#100;&#x65;&#106;&#x75;&#110;&#x35;&#57;&#53;&#64;&#112;&#x69;&#110;&#x67;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;&#x2e;&#x63;&#110;</a></p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/">https://bigzuo.github.io/</a></p>
 </blockquote>
-<h3 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h3><p>Kafka 0.8.2 ，JDK1.7，producer api: kafka.javaapi.producer.Producer</p>
-<h3 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h3><p>   项目组在16年引入kafka组件作为消息中间件，之后慢慢有更多功能接入kafka，虽然中间出过几次小问题，但均不影响主要功能。直到近期一个新功能也接入kafka后，我们发现kafka集群CPU使用率变得很高，正常运行时CPU使用率都在40%-60%，并且随着新功能往kafka发送的消息量越来越大，出现发送延迟也越来越明显，后来基本大部分情况下往kafka发送一条消息需要10s以上，以至于导致该新功能完全不可用。但是这个时候我们发现kafka集群负载正常、IO正常，并且部分接入同一个kafka集群的其他功能发送消息也都正常。</p>
+<h2 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h2><p>Kafka 0.8.2 ，JDK1.7，producer api: kafka.javaapi.producer.Producer</p>
+<h2 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h2><p>   项目组在16年引入kafka组件作为消息中间件，之后慢慢有更多功能接入kafka，虽然中间出过几次小问题，但均不影响主要功能。直到近期一个新功能也接入kafka后，我们发现kafka集群CPU使用率变得很高，正常运行时CPU使用率都在40%-60%，并且随着新功能往kafka发送的消息量越来越大，出现发送延迟也越来越明显，后来基本大部分情况下往kafka发送一条消息需要10s以上，以至于导致该新功能完全不可用。但是这个时候我们发现kafka集群负载正常、IO正常，并且部分接入同一个kafka集群的其他功能发送消息也都正常。</p>
           <!--noindex-->
           <div class="post-button text-center">
             <a class="btn" href="/2017/03/13/Kafka-producer-发送效率低下问题解决与原因分析/#more" rel="contents">
