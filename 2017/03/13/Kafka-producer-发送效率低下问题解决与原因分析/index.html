@@ -88,26 +88,26 @@
 
 
 <meta name="description" content="Kafka producer 发送效率低下问题解决与原因分析
-原创文章，如有疑问，请联系&amp;#122;&amp;#x75;&amp;#x6f;&amp;#x64;&amp;#x65;&amp;#x6a;&amp;#117;&amp;#x6e;&amp;#53;&amp;#57;&amp;#53;&amp;#x40;&amp;#112;&amp;#105;&amp;#x6e;&amp;#x67;&amp;#x61;&amp;#110;&amp;#x2e;&amp;#x63;&amp;#111;&amp;#109;&amp;#x2e;&amp;#x63;&amp;#110;
+原创文章，如有疑问，请联系&amp;#x7a;&amp;#117;&amp;#111;&amp;#100;&amp;#x65;&amp;#106;&amp;#x75;&amp;#110;&amp;#x35;&amp;#57;&amp;#53;&amp;#64;&amp;#112;&amp;#x69;&amp;#110;&amp;#x67;&amp;#97;&amp;#110;&amp;#x2e;&amp;#99;&amp;#x6f;&amp;#x6d;&amp;#x2e;&amp;#x63;&amp;#110;
 
-版本信息Kaf">
+版本信息Kafka">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kafka producer 发送效率低下问题解决与原因分析">
 <meta property="og:url" content="https://bigzuo.github.io/2017/03/13/Kafka-producer-发送效率低下问题解决与原因分析/index.html">
 <meta property="og:site_name" content="大左官博">
 <meta property="og:description" content="Kafka producer 发送效率低下问题解决与原因分析
-原创文章，如有疑问，请联系&amp;#122;&amp;#x75;&amp;#x6f;&amp;#x64;&amp;#x65;&amp;#x6a;&amp;#117;&amp;#x6e;&amp;#53;&amp;#57;&amp;#53;&amp;#x40;&amp;#112;&amp;#105;&amp;#x6e;&amp;#x67;&amp;#x61;&amp;#110;&amp;#x2e;&amp;#x63;&amp;#111;&amp;#109;&amp;#x2e;&amp;#x63;&amp;#110;
+原创文章，如有疑问，请联系&amp;#x7a;&amp;#117;&amp;#111;&amp;#100;&amp;#x65;&amp;#106;&amp;#x75;&amp;#110;&amp;#x35;&amp;#57;&amp;#53;&amp;#64;&amp;#112;&amp;#x69;&amp;#110;&amp;#x67;&amp;#97;&amp;#110;&amp;#x2e;&amp;#99;&amp;#x6f;&amp;#x6d;&amp;#x2e;&amp;#x63;&amp;#110;
 
-版本信息Kaf">
+版本信息Kafka">
 <meta property="og:image" content="http://img.blog.csdn.net/20140808173819422?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGl6aGl0YW8=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 <meta property="og:image" content="http://kaimingwan.com/kafka/_image/kafka%E7%94%9F%E4%BA%A7%E8%80%85%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3/11-23-09.jpg">
-<meta property="og:updated_time" content="2017-03-13T13:49:33.000Z">
+<meta property="og:updated_time" content="2017-03-18T08:29:56.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kafka producer 发送效率低下问题解决与原因分析">
 <meta name="twitter:description" content="Kafka producer 发送效率低下问题解决与原因分析
-原创文章，如有疑问，请联系&amp;#122;&amp;#x75;&amp;#x6f;&amp;#x64;&amp;#x65;&amp;#x6a;&amp;#117;&amp;#x6e;&amp;#53;&amp;#57;&amp;#53;&amp;#x40;&amp;#112;&amp;#105;&amp;#x6e;&amp;#x67;&amp;#x61;&amp;#110;&amp;#x2e;&amp;#x63;&amp;#111;&amp;#109;&amp;#x2e;&amp;#x63;&amp;#110;
+原创文章，如有疑问，请联系&amp;#x7a;&amp;#117;&amp;#111;&amp;#100;&amp;#x65;&amp;#106;&amp;#x75;&amp;#110;&amp;#x35;&amp;#57;&amp;#53;&amp;#64;&amp;#112;&amp;#x69;&amp;#110;&amp;#x67;&amp;#97;&amp;#110;&amp;#x2e;&amp;#99;&amp;#x6f;&amp;#x6d;&amp;#x2e;&amp;#x63;&amp;#110;
 
-版本信息Kaf">
+版本信息Kafka">
 <meta name="twitter:image" content="http://img.blog.csdn.net/20140808173819422?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGl6aGl0YW8=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
 
 
@@ -354,12 +354,13 @@
 
       
         <h2 id="Kafka-producer-发送效率低下问题解决与原因分析"><a href="#Kafka-producer-发送效率低下问题解决与原因分析" class="headerlink" title="Kafka producer 发送效率低下问题解决与原因分析"></a>Kafka producer 发送效率低下问题解决与原因分析</h2><blockquote>
-<p>原创文章，如有疑问，请联系<a href="&#109;&#97;&#105;&#x6c;&#116;&#x6f;&#x3a;&#122;&#x75;&#x6f;&#x64;&#x65;&#x6a;&#117;&#x6e;&#53;&#57;&#53;&#x40;&#112;&#105;&#x6e;&#x67;&#x61;&#110;&#x2e;&#x63;&#111;&#109;&#x2e;&#x63;&#110;">&#122;&#x75;&#x6f;&#x64;&#x65;&#x6a;&#117;&#x6e;&#53;&#57;&#53;&#x40;&#112;&#105;&#x6e;&#x67;&#x61;&#110;&#x2e;&#x63;&#111;&#109;&#x2e;&#x63;&#110;</a></p>
+<p>原创文章，如有疑问，请联系<a href="&#x6d;&#x61;&#x69;&#x6c;&#x74;&#111;&#x3a;&#x7a;&#117;&#111;&#100;&#x65;&#106;&#x75;&#110;&#x35;&#57;&#53;&#64;&#112;&#x69;&#110;&#x67;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;&#x2e;&#x63;&#110;">&#x7a;&#117;&#111;&#100;&#x65;&#106;&#x75;&#110;&#x35;&#57;&#53;&#64;&#112;&#x69;&#110;&#x67;&#97;&#110;&#x2e;&#99;&#x6f;&#x6d;&#x2e;&#x63;&#110;</a></p>
 </blockquote>
 <h3 id="版本信息"><a href="#版本信息" class="headerlink" title="版本信息"></a>版本信息</h3><p>Kafka 0.8.2 ，JDK1.7，producer api: kafka.javaapi.producer.Producer</p>
 <h3 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h3><p>   项目组在16年引入kafka组件作为消息中间件，之后慢慢有更多功能接入kafka，虽然中间出过几次小问题，但均不影响主要功能。直到近期一个新功能也接入kafka后，我们发现kafka集群CPU使用率变得很高，正常运行时CPU使用率都在40%-60%，并且随着新功能往kafka发送的消息量越来越大，出现发送延迟也越来越明显，后来基本大部分情况下往kafka发送一条消息需要10s以上，以至于导致该新功能完全不可用。但是这个时候我们发现kafka集群负载正常、IO正常，并且部分接入同一个kafka集群的其他功能发送消息也都正常。</p>
-<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><p>在尝试多种解决方案无果后，我们开始重点分析为什么访问的是同一个kafka集群，但是部分系统往kafka发送消息就完成正常，我们往kafka发送消息效率就很差。后来一对比发现，两个客户端采用producer API不一样，我们用的是旧kafka API，即是用scala语言编写的kafka.javaapi，他们使用的是新kafka API，即用Java 语言编写的<code>org.apache.kafka.clients</code>。我们分析两种API的发送机制后发现：旧API有两种发送方式，同步和异步，即<strong>sync</strong>和<strong>async</strong>两种发送方式，我们代码实际采用的是默认发送方式：同步方式，新API只支持异步发送方式，于是我们尝试将我们的发送方式也改成异步发送，然后发现问题消失，客户端往kafka 发送消息时耗时基本都在0ms。<br><br></p>
-<h3 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h3><p>旧版本API 发送流程可以概括如下图，这幅图包括3个部分，中间的（深蓝色矩形）部分的流程是发送的核心流程（同步发送）；左边（淡蓝色）是异步发送时相关的额外流程，右边（黄色）是客户端更新元信息相关的流程。<br><img src="http://img.blog.csdn.net/20140808173819422?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGl6aGl0YW8=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="image"><br><br><br><br><br><strong>结合kafka producer源码，梳理出生产者完成一次完整的消息发送，对应的方法调用可以整理为如下图：</strong><br><br><br><br><br><img src="http://kaimingwan.com/kafka/_image/kafka%E7%94%9F%E4%BA%A7%E8%80%85%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3/11-23-09.jpg" alt="image"><br><br><br><br></p>
+<a id="more"></a>
+<h3 id="问题解决"><a href="#问题解决" class="headerlink" title="问题解决"></a>问题解决</h3><p>在尝试多种解决方案无果后，我们开始重点分析为什么访问的是同一个kafka集群，但是部分系统往kafka发送消息就完成正常，我们往kafka发送消息效率就很差。后来一对比发现，两个客户端采用producer API不一样，我们用的是旧kafka API，即是用scala语言编写的kafka.javaapi，他们使用的是新kafka API，即用Java 语言编写的<code>org.apache.kafka.clients</code>。我们分析两种API的发送机制后发现：旧API有两种发送方式，同步和异步，即<strong>sync</strong>和<strong>async</strong>两种发送方式，我们代码实际采用的是默认发送方式：同步方式，新API只支持异步发送方式，于是我们尝试将我们的发送方式也改成异步发送，然后发现问题消失，客户端往kafka 发送消息时耗时基本都在0ms。  </p>
+<h3 id="原因分析"><a href="#原因分析" class="headerlink" title="原因分析"></a>原因分析</h3><p>旧版本API 发送流程可以概括如下图，这幅图包括3个部分，中间的（深蓝色矩形）部分的流程是发送的核心流程（同步发送）；左边（淡蓝色）是异步发送时相关的额外流程，右边（黄色）是客户端更新元信息相关的流程。<br><img src="http://img.blog.csdn.net/20140808173819422?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvbGl6aGl0YW8=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="image"><br><br><br><strong>结合kafka producer源码，梳理出生产者完成一次完整的消息发送，对应的方法调用可以整理为如下图：</strong><br><br><br><img src="http://kaimingwan.com/kafka/_image/kafka%E7%94%9F%E4%BA%A7%E8%80%85%E5%8E%9F%E7%90%86%E8%AF%A6%E8%A7%A3/11-23-09.jpg" alt="image"><br><br></p>
 <p>所以，结合这两幅流程图，我们可以很明显的梳理出同步发送的逻辑：<br>1、Producer实例调用其send方法<br>2、本质是调用了Handler的handle(message)<br>3、handler序列化消息<br>4、handler调用dispatchSerializedData方法来调度序列化后的消息<br>5、dispatchSerializedData方法调用partitionAndCollate方法对topic的message进行分组（根据获取的leaderBrokerId元数据来对消息分组）<br>6、从生产者池中获取不同broker对应的生产者，来真正的发送消息  </p>
 <p>以上6个步骤简化来看，可以分为3个主要步骤：<strong>序列化消息数据 -&gt; 获取broker topic原数据对消息数据进行分区 -&gt; 发送</strong>。</p>
 <p>当采用异步发送方式时，其实就是在同步发送的基础上增加了一些额外流程，来达到异步批量发送的目的。增加的额外流程为：<br>1、创建生产者时，会同时创建一个SendThread线程和一个阻塞队列，调用发放方法时，先将消息写入一个阻塞队列<br>2、SendThread线程定时轮询阻塞队列，拉取缓存消息<br>3、调用同步发送方法将阻塞队列的消息作为一个batch批量发送  </p>
