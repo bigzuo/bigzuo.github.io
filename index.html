@@ -270,6 +270,156 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/03/19/java-LinkageError-loader-constraint-violation-error/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="大左">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大左官博">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/03/19/java-LinkageError-loader-constraint-violation-error/" itemprop="url">
+                  Java LinkageError:loader constraint violation 异常分析与解决
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-19T12:07:49+08:00">
+                2017-03-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/03/19/java-LinkageError-loader-constraint-violation-error/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/19/java-LinkageError-loader-constraint-violation-error/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="环境信息"><a href="#环境信息" class="headerlink" title="环境信息"></a>环境信息</h2><p>Tomcat 7，JDK1.7， Windows 7</p>
+<h2 id="问题现象"><a href="#问题现象" class="headerlink" title="问题现象"></a>问题现象</h2><pre><code class="java">nested exception is java.lang.LinkageError: loader constraint violation: when
+resolving method <span class="string">"org.slf4j.impl.StaticLoggerBinder.getLoggerFactory()Lorg/slf4j/ILoggerFactory;"</span> <span class="function">the class <span class="title">loader</span> <span class="params">(instance of org/apache/catalina/loader/WebappClassLoader)</span> of the current class, org/
+slf4j/LoggerFactory, and the class <span class="title">loader</span> <span class="params">(instance of org/apache/catalina/loader/StandardClassLoader)</span> <span class="keyword">for</span> resolved class, org/slf4j/impl/StaticLoggerBinder, have different Class objects <span class="keyword">for</span> the type
+org/slf4j/ILoggerFactory used in the signature
+        at org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor.<span class="title">postProcessPropertyValues</span><span class="params">(AutowiredAnnotationBeanPostProcessor.java:<span class="number">287</span>)</span>
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.<span class="title">populateBean</span><span class="params">(AbstractAutowireCapableBeanFactory.java:<span class="number">1106</span>)</span>
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.<span class="title">doCreateBean</span><span class="params">(AbstractAutowireCapableBeanFactory.java:<span class="number">517</span>)</span>
+        at org.springframework.beans.factory.support.AbstractAutowireCapableBeanFactory.<span class="title">createBean</span><span class="params">(AbstractAutowireCapableBeanFactory.java:<span class="number">456</span>)</span>
+        at org.springframework.beans.factory.support.AbstractBeanFactory$1.<span class="title">getObject</span><span class="params">(AbstractBeanFactory.java:<span class="number">294</span>)</span>
+        at org.springframework.beans.factory.support.DefaultSingletonBeanRegistry.<span class="title">getSingleton</span><span class="params">(DefaultSingletonBeanRegistry.java:<span class="number">225</span>)</span>
+        at org.springframework.beans.factory.support.AbstractBeanFactory.<span class="title">doGetBean</span><span class="params">(AbstractBeanFactory.java:<span class="number">291</span>)</span>
+        at org.springframework.beans.factory.support.AbstractBeanFactory.<span class="title">getBean</span><span class="params">(AbstractBeanFactory.java:<span class="number">193</span>)</span>
+        at org.springframework.beans.factory.support.DefaultListableBeanFactory.<span class="title">preInstantiateSingletons</span><span class="params">(DefaultListableBeanFactory.java:<span class="number">585</span>)</span>
+        at org.springframework.context.support.AbstractApplicationContext.<span class="title">finishBeanFactoryInitialization</span><span class="params">(AbstractApplicationContext.java:<span class="number">913</span>)</span>
+        at org.springframework.context.support.AbstractApplicationContext.<span class="title">refresh</span><span class="params">(AbstractApplicationContext.java:<span class="number">464</span>)</span>
+        at org.springframework.web.servlet.FrameworkServlet.<span class="title">configureAndRefreshWebApplicationContext</span><span class="params">(FrameworkServlet.java:<span class="number">631</span>)</span>
+        at org.springframework.web.servlet.FrameworkServlet.<span class="title">createWebApplicationContext</span><span class="params">(FrameworkServlet.java:<span class="number">588</span>)</span></span>
+</code></pre>
+<h2 id="问题原因"><a href="#问题原因" class="headerlink" title="问题原因"></a>问题原因</h2><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://stackoverflow.com/questions/29504180/slf4j-error-class-loader-have-different-class-objects-for-the-type" target="_blank" rel="external">SLF4J error: class loader have different class objects for the type</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="external">How to deal with LinkageErrors in Java?</a></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/03/19/kafka异常关闭（kill -9）后导致无法重启/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -862,7 +1012,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">4</span>
+                <span class="site-state-item-count">5</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -875,7 +1025,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
             
             <div class="site-state-item site-state-tags">
               
-                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-count">2</span>
                 <span class="site-state-item-name">标签</span>
               
             </div>
