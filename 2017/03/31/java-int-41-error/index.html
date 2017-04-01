@@ -100,7 +100,7 @@
 今天在重写Twitter 的分布式ID生成算法 sonw flake算法时，遇到一个问题，即一个整数在多次相乘后，输出的结果是0！对应的测试程序如下：  
 123456int a = 1;System.out.println(a);for (int i =2;i&amp;lt;42;++i) &amp;#123;   	a =">
 <meta property="og:image" content="https://bigzuo.coding.me/bigzuo/images/short_int.png">
-<meta property="og:updated_time" content="2017-04-01T03:03:39.000Z">
+<meta property="og:updated_time" content="2017-04-01T05:47:50.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java int 类型数值越界引发的思考">
 <meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/
@@ -367,14 +367,14 @@
 </blockquote>
 <p>今天在重写Twitter 的分布式ID生成算法 <strong>sonw flake</strong>算法时，遇到一个问题，即一个整数在多次相乘后，输出的结果是0！对应的测试程序如下：  </p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> a = <span class="number">1</span>;</div><div class="line">System.out.println(a);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i =<span class="number">2</span>;i&lt;<span class="number">42</span>;++i) &#123;</div><div class="line">   	a = a*<span class="number">2</span>;</div><div class="line">&#125;</div><div class="line">System.out.println(a);</div></pre></td></tr></table></figure>
-<p>后来思考了一下才反应过来，这个相乘的结果，远超过了Java int类型可以表示的范围。Java int类型可以表示的范围才是<strong>-$$2^{31}$$</strong>到<strong>$$2^{31}$$-1</strong>。  </p>
+<p>后来思考了一下才反应过来，这个相乘的结果，远超过了Java int类型可以表示的范围。Java int类型可以表示的范围才是<strong>-$2^{31}$</strong>到<strong>$2^{31}$-1</strong>。  </p>
 <p>但是为什么输出结果是0呢？<br><a id="more"></a></p>
-<p>因为计算机在存储数据时，最高位表示的是符号位，0表示正数，1表示负数，并且计算机中的数据使用补码来表示的。正数的补码是其本身，而负数的补码则是其反码加1(不包括符号位).<br>因为在执行<strong>“a = a*2”</strong>，当<strong>a=$$2^{31}$$</strong>时，在计算机中的表示已经变成变成了“10000000 00000000 00000000 00000000”，然后计算机在读取这个值的时候，就会把它当成负数来读，然后对应的值就是最小负数：-2147483648。  </p>
-<p>接下来，当执行到<strong>a=$$2^{32}$$</strong>，理论上值已经变成“1 00000000 00000000 00000000 00000000”，即33位，但是计算机在读取int类型时，只会读取32位，因此会舍弃掉最前面的“1”，因此读出来的结果就是0.  </p>
+<p>因为计算机在存储数据时，最高位表示的是符号位，0表示正数，1表示负数，并且计算机中的数据使用补码来表示的。正数的补码是其本身，而负数的补码则是其反码加1(不包括符号位).<br>因为在执行<strong>“a = a*2”</strong>，当<strong>a=$2^{31}$</strong>时，在计算机中的表示已经变成变成了“10000000 00000000 00000000 00000000”，然后计算机在读取这个值的时候，就会把它当成负数来读，然后对应的值就是最小负数：-2147483648。  </p>
+<p>接下来，当执行到<strong>a=$2^{32}$</strong>，理论上值已经变成“1 00000000 00000000 00000000 00000000”，即33位，但是计算机在读取int类型时，只会读取32位，因此会舍弃掉最前面的“1”，因此读出来的结果就是0.  </p>
 <p>下面以short类型举例，说明一下数字在计算机中二进制的存储方式：  </p>
 <p>最小的负整数 -32768&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 计算机中二进制标示：10000000&nbsp;&nbsp; 00000000</p><br><p>最大的负整数-1　　　　&nbsp;&nbsp;计算机中二进制标示：11111111&nbsp; 11111111</p><br><p>0　　　　　　　　　　　计算机中二进制标示：00000000&nbsp; 0000000</p><br><p>最小的正整数 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 计算机中二进制标示： 00000000 00000001</p><br><p>最大的正整数：32767　&nbsp;&nbsp;&nbsp;计算机中二进制标示： 01111111&nbsp; 11111111</p>
 
-<p>最小负整数-32768加1之后，在计算机中的表示就是：10000000  00000001，对应的值就是<strong>-$$(2^{15}$$-1)</strong>,即-32767。然后一直加1，直到11111111 11111111，对应的值就是-1，再加1，就变成了1 00000000 00000000，即17位，而short类型只读取16位，所以-1+1=0。00000000 00000000一直加1，加到01111111 11111111，就变成了short类型的最大整数32767。再加1，就变成了10000000  00000000，即最小负数：-32768。对应的循环图如下：<br><img src="https://bigzuo.coding.me/bigzuo/images/short_int.png" alt="">  </p>
+<p>最小负整数-32768加1之后，在计算机中的表示就是：10000000  00000001，对应的值就是<strong>- $ (2^{15} $ -1)</strong>,即-32767。然后一直加1，直到11111111 11111111，对应的值就是-1，再加1，就变成了1 00000000 00000000，即17位，而short类型只读取16位，所以-1+1=0。00000000 00000000一直加1，加到01111111 11111111，就变成了short类型的最大整数32767。再加1，就变成了10000000  00000000，即最小负数：-32768。对应的循环图如下：<br><img src="https://bigzuo.coding.me/bigzuo/images/short_int.png" alt="">  </p>
 <p>理解了这些之后就不难明白，为什么上一段程序的运行结果是0了。平时还是要多温故基础知识，否则很可能在一些不起眼的地方栽了坑。</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://udn.yyuap.com/topic/java/web/12110.html" target="_blank" rel="external">谈谈Java中整数类型（short int long）的存储方式</a></p>
 
@@ -587,6 +587,30 @@
   </a>
 </div>
 
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"], linebreaks: { automatic:true }, EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) },
+ tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno",skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']},
+ TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, Macros: { href: "{}" } },
+ messageStyle: "none"
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script charset="utf-8" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
         
 

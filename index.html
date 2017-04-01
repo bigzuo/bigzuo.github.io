@@ -361,7 +361,7 @@
 </blockquote>
 <p>今天在重写Twitter 的分布式ID生成算法 <strong>sonw flake</strong>算法时，遇到一个问题，即一个整数在多次相乘后，输出的结果是0！对应的测试程序如下：  </p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">int</span> a = <span class="number">1</span>;</div><div class="line">System.out.println(a);</div><div class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i =<span class="number">2</span>;i&lt;<span class="number">42</span>;++i) &#123;</div><div class="line">   	a = a*<span class="number">2</span>;</div><div class="line">&#125;</div><div class="line">System.out.println(a);</div></pre></td></tr></table></figure>
-<p>后来思考了一下才反应过来，这个相乘的结果，远超过了Java int类型可以表示的范围。Java int类型可以表示的范围才是<strong>-$$2^{31}$$</strong>到<strong>$$2^{31}$$-1</strong>。  </p>
+<p>后来思考了一下才反应过来，这个相乘的结果，远超过了Java int类型可以表示的范围。Java int类型可以表示的范围才是<strong>-$2^{31}$</strong>到<strong>$2^{31}$-1</strong>。  </p>
 <p>但是为什么输出结果是0呢？<br>
           <!--noindex-->
           <div class="post-button text-center">
@@ -1224,6 +1224,30 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
   </a>
 </div>
 
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"], linebreaks: { automatic:true }, EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) },
+ tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno",skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']},
+ TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, Macros: { href: "{}" } },
+ messageStyle: "none"
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script charset="utf-8" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
         
 
