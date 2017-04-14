@@ -98,7 +98,7 @@
 
 背景介绍项目开发过程中经常会需要生成一个唯一ID，并且由于现在项目应用都是集群部署，所以更多时候还需要保证唯一ID支持分布式。一些情况下，开发人员为了省事，会直接使用时间戳System.currentTimeMillis()或者是UUID。这两种方式都存在不完善的地方。尤其是采用时间戳，时间戳本质是毫秒数，完全">
 <meta property="og:image" content="https://bigzuo.github.io/images/distribute_unique_id.png">
-<meta property="og:updated_time" content="2017-04-14T12:39:20.000Z">
+<meta property="og:updated_time" content="2017-04-14T12:40:59.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Twitter snowflake 分布式ID生成算法的简单改造">
 <meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/
@@ -385,6 +385,7 @@
 <p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/">https://bigzuo.github.io/</a></p>
 </blockquote>
 <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>项目开发过程中经常会需要生成一个唯一ID，并且由于现在项目应用都是集群部署，所以更多时候还需要保证唯一ID支持分布式。<br>一些情况下，开发人员为了省事，会直接使用时间戳<code>System.currentTimeMillis()</code><br>或者是<strong>UUID</strong>。这两种方式都存在不完善的地方。尤其是采用时间戳，时间戳本质是毫秒数，完全不支持分布式，会存在很高可能导致生成的ID重复。<strong>UUID</strong>虽然本身生成机制可以保证全球唯一，横向扩展性好，但是部分场景下，<strong>UUID</strong>长度可能过长，并且<strong>UUID</strong>是字符串类型，对需要对ID进行排序、对比的场景支持的并不友好，索引效率也很低。<br>鉴于以上原因，我们基于<em>Twitter</em> 开源的分布式ID生成算法<strong>Snowflake</strong>重写了一套分布式ID生成算法，即可以保证分布式唯一，又可以解决采用时间戳或者<strong>UUID</strong>带来的问题。</p>
+<a id="more"></a>
 <h2 id="算法详解"><a href="#算法详解" class="headerlink" title="算法详解"></a>算法详解</h2><p><strong>Snowflake</strong>是<em>Twitter</em> 开源的一个分布式ID生成算法，目前使用范围很广。其核心思想是将一个<strong>long</strong>类型的数字分成4段，其中毫秒内自增序列占12位，机器ID占5位，机房ID占5位，时间戳占41位，最高位为符号位，然后组合生成一个64位<strong>long</strong>类型的分布式唯一ID。ID长度不超过18位，并且长时间内趋势递增，方便分析、统计和排序。这个算法理论上可以保证在69年内、1024台机器上生成的ID唯一。<br>我们结合项目组的实际情况，即一般一个应用部署的机器集群不会超过100台，并且一般都部署在同一机房，做了如下改造：<br><img src="https://bigzuo.github.io/images/distribute_unique_id.png" alt="">  </p>
 <ul>
 <li>ID生成规则重组。毫秒内自增序列占10位，机器ID占8位，默认采用服务器IP的第四段，机器MAC地址hoshCode占5位，时间戳占40位（见上图）。这样就可以保证在同一机房、同一网段的256台机器生成的ID唯一。</li>
