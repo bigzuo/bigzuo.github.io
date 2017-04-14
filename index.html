@@ -270,6 +270,162 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/04/14/distribute-unique-id-renewal/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="大左">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大左官博">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/04/14/distribute-unique-id-renewal/" itemprop="url">
+                  Twitter snowflake分布式ID生成算法的简单改造
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-04-14T20:03:37+08:00">
+                2017-04-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/算法/" itemprop="url" rel="index">
+                    <span itemprop="name">算法</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/04/14/distribute-unique-id-renewal/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/04/14/distribute-unique-id-renewal/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>项目开发过程中经常会需要生成一个唯一ID，并且由于现在项目应用都是集群部署，所以更多时候还需要保证唯一ID支持分布式。<br>一些情况下，开发人员为了省事，会直接使用时间戳<figure class="highlight plain"><figcaption><span>或者是**UUID**。这两种方式都存在不完善的地方。尤其是采用时间戳，时间戳本质是毫秒数，完全不支持分布式，会存在很高可能导致生成的ID重复。**UUID**虽然本身生成机制可以保证全球唯一，横向扩展性好，但是部分场景下，**UUID**长度可能过长，并且**UUID**是字符串类型，对需要对ID进行排序、对比的场景支持的并不友好，索引效率也很低。  </span></figcaption><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div></pre></td><td class="code"><pre><div class="line">鉴于以上原因，我们基于*Twitter* 开源的分布式ID生成算法**Snowflake**重写了一套分布式ID生成算法，即可以保证分布式唯一，又可以解决采用时间戳或者**UUID**带来的问题。</div><div class="line"></div><div class="line">## 算法详解</div><div class="line">**Snowflake**是*Twitter* 开源的一个分布式ID生成算法，目前使用范围很广。其核心思想是将一个**long**类型的数字分成4段，其中毫秒内自增序列占12位，机器ID占5位，机房ID占5位，时间戳占41位，最高位为符号位，然后组合生成一个64位**long**类型的分布式唯一ID。ID长度不超过18位，并且长时间内趋势递增，方便分析、统计和排序。这个算法理论上可以保证在69年内、1024台机器上生成的ID唯一。  </div><div class="line">我们结合项目组的实际情况，即一般一个应用部署的机器集群不会超过100台，并且一般都部署在同一机房，做了如下改造：</div><div class="line">![](https://bigzuo.github.io/images/distribute_unique_id.png)  </div><div class="line"></div><div class="line">- ID生成规则重组。毫秒内自增序列占10位，机器ID占8位，默认采用服务器IP的第四段，机器MAC地址hoshCode占5位，时间戳占40位（见上图）。这样就可以保证在同一机房、同一网段的256台机器生成的ID唯一。</div><div class="line">- 新增一个ID生成算法：```uniqueIdCurDay()```，可以生成一天内不重复的分布式唯一ID，并且长度不超过14位。因为在和关联系统交互中，经常关联方会要求生成一个一天内不重复的ID，并且长度不超过15位。  </div><div class="line"></div><div class="line">经过改造后，**新的算法可以支持同一机房内的256台机器34年内生成的ID不重复，并且每台机器每秒可以生成100万个ID**，基本可以满足项目组的需要，并且线程安全。</div><div class="line"></div><div class="line"></div><div class="line">核心代码：  </div><div class="line"></div><div class="line">```java</div><div class="line">private final long twepoch = 1482192000000L; //twepoch 为System.currentTimeMillis() 方法起始时间1970-1-01 00:00:00.000 到 2017-01-01 00:00:00.000 之间的毫秒数.</div><div class="line">    private long sequence = 0L;</div><div class="line"></div><div class="line">    private long hostId = 0L;</div><div class="line">    private long hostMac = 0L;</div><div class="line"></div><div class="line">    private final long sequenceBits = 10L;</div><div class="line">    private final long sequenceMask = -1L^(-1L&lt;&lt;sequenceBits);</div><div class="line"></div><div class="line">    private final long hostIdBits = 8L;</div><div class="line">    private final long hostMacBits = 5L;</div><div class="line"></div><div class="line">    private final long hostMacMax = -1L^(-1L&lt;&lt;hostMacBits);</div><div class="line">    private final long hostIdMax = -1L^(-1L&lt;&lt; hostIdBits);</div><div class="line"></div><div class="line">    private final long hostMacShift = sequenceBits;</div><div class="line">    private final long hostIdShift = hostMacBits+sequenceBits;</div><div class="line">    private final long timetampShift = hostIdBits + hostMacBits+sequenceBits;</div><div class="line"></div><div class="line">    private long lastTimetamp = -1L;</div><div class="line"></div><div class="line">    private IdGenerator() &#123;</div><div class="line">        hostId = getLocalIpLastSegment();</div><div class="line">        hostMac = getLocalMacHashCode()%hostMacMax;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private IdGenerator(long hostId) &#123;</div><div class="line">        if (hostId &lt;0 || hostId &gt; hostIdMax)    &#123;</div><div class="line">            throw new RuntimeException(String.format(&quot;Host Id can&apos;t be greater than %d or less than 0&quot;,hostIdMax));</div><div class="line">        &#125;</div><div class="line">        this.hostId = hostId;</div><div class="line">        hostMac = getLocalMacHashCode()%hostMacMax;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    public synchronized long uniqueId()   &#123;</div><div class="line">        long currentTime = timeGen();</div><div class="line">        if (currentTime &lt; lastTimetamp) &#123;</div><div class="line">            log.error(String.format(&quot;Clock is moving backwards.  Rejecting requests until %d.&quot;, lastTimetamp));</div><div class="line">            throw new RuntimeException(String.format(&quot;Clock moved backwards, Refusing to generate id for %d milliseconds.&quot;,(lastTimetamp - currentTime)));</div><div class="line">        &#125;</div><div class="line">        if (currentTime == lastTimetamp)    &#123;</div><div class="line">            sequence = (sequence+1) &amp; sequenceMask;</div><div class="line">            if (sequence ==0 )  &#123;</div><div class="line">                tilNextMilsecond(lastTimetamp);</div><div class="line">            &#125;</div><div class="line">        &#125;   else &#123;</div><div class="line">            sequence = 0L;</div><div class="line">        &#125;</div><div class="line">        lastTimetamp = currentTime;</div><div class="line">        return ((lastTimetamp - twepoch)&lt;&lt;timetampShift) | (hostId &lt;&lt; hostIdShift) | (hostMac &lt;&lt; hostMacShift) | sequence;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private long timeGen()  &#123;</div><div class="line">        return System.currentTimeMillis();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    private long tilNextMilsecond(long lastTimetamp) &#123;</div><div class="line">        long timetamp = timeGen();</div><div class="line">        while (timetamp &lt;= lastTimetamp)  &#123;</div><div class="line">            timetamp = timeGen();</div><div class="line">        &#125;</div><div class="line">        return timetamp;</div><div class="line">    &#125;</div><div class="line">```  </div><div class="line"></div><div class="line">完整代码下载：[IdGenerator.java](https://bigzuo.github.io/images/IdGenerator.java)  </div><div class="line">引用方法非常简单： </div><div class="line"> </div><div class="line">```java</div><div class="line">System.out.println(IdGenerator.NEXT.uniqueId());    //产生分布式唯一ID</div><div class="line">System.out.println(IdGenerator.NEXT.uniqueIdCurDay());  //产生当天内不重复分布式唯一ID</div></pre></td></tr></table></figure></p>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p><code>uniqueIdCurDay()</code> 方法中 分布式ID 生成算法 依赖hostId，由于hostId 默认采用IP的第四段，即当应用服务器集群 跨网段部署或者数量超过256台时，可能会导致生成的分布式ID重复。<code>uniqueId()</code> 方法中分布式ID 生成算法依赖hostId和MAC地址对32取余， 所以当应用服务器集群 跨网段部署或者数量超过256台时，生成ID重复的概率要比 uniqueIdCurDay() 方法低很多，但是依然会有重复的可能。  </p>
+<p>总之，当应用服务器集群 跨网段部署或者数量超过256台时,不建议继续使用该方法生成分布式唯一ID。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://www.lanindex.com/twitter-snowflake%EF%BC%8C64%E4%BD%8D%E8%87%AA%E5%A2%9Eid%E7%AE%97%E6%B3%95%E8%AF%A6%E8%A7%A3/" target="_blank" rel="external">Twitter-Snowflake，64位自增ID算法详解</a></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/03/31/java-int-41-error/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1260,7 +1416,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">6</span>
+                <span class="site-state-item-count">7</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
@@ -1271,7 +1427,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
             
             <div class="site-state-item site-state-categories">
               
-                <span class="site-state-item-count">2</span>
+                <span class="site-state-item-count">3</span>
                 <span class="site-state-item-name">分类</span>
               
             </div>
