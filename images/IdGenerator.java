@@ -87,8 +87,8 @@ public enum IdGenerator {
             }
         }   else {
             sequence = 0L;
+            lastTimetamp = currentTime;
         }
-        lastTimetamp = currentTime;
         return ((lastTimetamp - twepoch)<<timetampShift) | (hostId << hostIdShift) | (hostMac << hostMacShift) | sequence;
     }
 
@@ -114,9 +114,10 @@ public enum IdGenerator {
             }
         }   else {
             sequenceCurDay = 0;
+            lastTimetampCurDay = timetamp;
         }
-        lastTimetampCurDay = timetamp;
-        return (lastTimetampCurDay<<timetampShiftCurDay) | (hostId << hostIdShiftCurDay) | sequence;
+
+        return (lastTimetampCurDay<<timetampShiftCurDay) | (hostId << hostIdShiftCurDay) | sequenceCurDay;
     }
 
     /**
