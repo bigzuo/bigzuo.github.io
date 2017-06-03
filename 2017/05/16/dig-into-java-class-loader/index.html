@@ -87,19 +87,22 @@
 
 
 
-<meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick">
+<meta name="description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？
+什么是SPI？SPI类加载机制？动手实现？
+参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="https://bigzuo.github.io/2017/03/11/hello-world/index.html">
+<meta property="og:title" content="深入理解 Java 类加载器及类加载机制">
+<meta property="og:url" content="https://bigzuo.github.io/2017/05/16/dig-into-java-class-loader/index.html">
 <meta property="og:site_name" content="大左官博">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick">
-<meta property="og:updated_time" content="2017-03-18T08:27:07.000Z">
+<meta property="og:description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？
+什么是SPI？SPI类加载机制？动手实现？
+参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
+<meta property="og:updated_time" content="2017-05-23T06:32:15.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hello World">
-<meta name="twitter:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub.
-Quick">
+<meta name="twitter:title" content="深入理解 Java 类加载器及类加载机制">
+<meta name="twitter:description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？
+什么是SPI？SPI类加载机制？动手实现？
+参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
 
 
 
@@ -127,13 +130,13 @@ Quick">
 
 
 
-  <link rel="canonical" href="https://bigzuo.github.io/2017/03/11/hello-world/"/>
+  <link rel="canonical" href="https://bigzuo.github.io/2017/05/16/dig-into-java-class-loader/"/>
 
 
 
 
 
-  <title> Hello World | 大左官博 </title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <title> 深入理解 Java 类加载器及类加载机制 | 大左官博 </title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
 </head>
 
 <body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
@@ -272,7 +275,7 @@ Quick">
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
-    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/03/11/hello-world/">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/05/16/dig-into-java-class-loader/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="大左">
@@ -293,7 +296,7 @@ Quick">
             
             
               
-                Hello World
+                深入理解 Java 类加载器及类加载机制
               
             
           </h1>
@@ -308,8 +311,8 @@ Quick">
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-03-11T11:59:20+08:00">
-                2017-03-11
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-16T21:50:55+08:00">
+                2017-05-16
               </time>
             
 
@@ -319,6 +322,28 @@ Quick">
           </span>
 
           
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java-JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">Java/JVM</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
 
           
             
@@ -327,8 +352,8 @@ Quick">
                 <span class="post-meta-item-icon">
                   <i class="fa fa-comment-o"></i>
                 </span>
-                <a href="/2017/03/11/hello-world/#comments" itemprop="discussionUrl">
-                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/03/11/hello-world/" itemprop="commentCount"></span>
+                <a href="/2017/05/16/dig-into-java-class-loader/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/05/16/dig-into-java-class-loader/" itemprop="commentCount"></span>
                 </a>
               </span>
             
@@ -354,16 +379,9 @@ Quick">
       
 
       
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<a id="more"></a>  
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
+        <h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
+<p>什么是SPI？SPI类加载机制？动手实现？</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://tomcat.apache.org/tomcat-8.0-doc/class-loader-howto.html" target="_blank" rel="external">Tomcat 8: Class Loader HOW-TO</a><br><a href="https://yq.aliyun.com/articles/2890" target="_blank" rel="external">深入浅出ClassLoader（译）</a><br><a href="https://www.zhihu.com/question/38472316/answer/79729218" target="_blank" rel="external">java的反射通过类名加载类和ClassLoader通过类名加载类有什么区别？</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/" target="_blank" rel="external">深入探讨 Java 类加载器</a><br><a href="http://wiki.metawerx.net/wiki/JARFilesYouShouldNeverIncludeInYourWebapp" target="_blank" rel="external">JAR files you should never include in your web-app</a><br><a href="http://shuhucy.iteye.com/blog/1900231" target="_blank" rel="external">Tomcat启动时类加载顺序及运行时类载入顺序</a><br><a href="http://wiki.jikexueyuan.com/project/tomcat/classloading.html" target="_blank" rel="external">Tomcat 8 类加载机制</a><br><a href="http://www.cnblogs.com/xing901022/p/4574961.html" target="_blank" rel="external">图解Tomcat类加载机制</a><br><a href="https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function" target="_blank" rel="external">Signature (functions)</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="external">How to deal with LinkageErrors in Java?</a><br><a href="http://tcljava.sourceforge.net/docs/TclJava/JavaSignatures.html" target="_blank" rel="external">Java Signatures</a><br><a href="http://stackoverflow.com/questions/1993493/error-servlet-jar-not-loaded-offending-class-javax-servlet-servlet-class" target="_blank" rel="external">Error: Servlet Jar not Loaded… Offending class: javax/servlet/Servlet.class</a><br><a href="http://blog.csdn.net/yangcheng33/article/details/52631940#reply" target="_blank" rel="external">真正理解线程上下文类加载器（多案例分析）</a></p>
 
       
     </div>
@@ -394,14 +412,18 @@ Quick">
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
+              <a href="/2017/04/14/distribute-unique-id-renewal/" rel="next" title="Twitter snowflake 分布式ID生成算法的简单改造">
+                <i class="fa fa-chevron-left"></i> Twitter snowflake 分布式ID生成算法的简单改造
+              </a>
+            
           </div>
 
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
             
-              <a href="/2017/03/13/Kafka-producer-发送效率低下问题解决与原因分析/" rel="prev" title="Kafka producer 发送效率低下问题解决与原因分析">
-                Kafka producer 发送效率低下问题解决与原因分析 <i class="fa fa-chevron-right"></i>
+              <a href="/2017/05/31/troubleshooting-long-gc-pauses/" rel="prev" title="【翻译】JMV GC 停顿时间过长问题排查">
+                【翻译】JMV GC 停顿时间过长问题排查 <i class="fa fa-chevron-right"></i>
               </a>
             
           </div>
@@ -428,8 +450,8 @@ Quick">
           
   <div class="comments" id="comments">
     
-      <div class="ds-thread" data-thread-key="2017/03/11/hello-world/"
-           data-title="Hello World" data-url="https://bigzuo.github.io/2017/03/11/hello-world/">
+      <div class="ds-thread" data-thread-key="2017/05/16/dig-into-java-class-loader/"
+           data-title="深入理解 Java 类加载器及类加载机制" data-url="https://bigzuo.github.io/2017/05/16/dig-into-java-class-loader/">
       </div>
     
   </div>
@@ -526,7 +548,7 @@ Quick">
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Quick-Start"><span class="nav-number">1.</span> <span class="nav-text">Quick Start</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Create-a-new-post"><span class="nav-number">1.1.</span> <span class="nav-text">Create a new post</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Run-server"><span class="nav-number">1.2.</span> <span class="nav-text">Run server</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Generate-static-files"><span class="nav-number">1.3.</span> <span class="nav-text">Generate static files</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Deploy-to-remote-sites"><span class="nav-number">1.4.</span> <span class="nav-text">Deploy to remote sites</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是类加载器"><span class="nav-number">1.</span> <span class="nav-text">什么是类加载器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM类加载机制"><span class="nav-number">2.</span> <span class="nav-text">JVM类加载机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tomcat类加载机制"><span class="nav-number">3.</span> <span class="nav-text">Tomcat类加载机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Tomcat-类加载顺序和时间"><span class="nav-number">3.1.</span> <span class="nav-text">Tomcat 类加载顺序和时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程类加载器"><span class="nav-number">4.</span> <span class="nav-text">线程类加载器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类加载器和容器"><span class="nav-number">5.</span> <span class="nav-text">类加载器和容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是签名（signature）"><span class="nav-number">6.</span> <span class="nav-text">什么是签名（signature）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#理解类加载器的作用"><span class="nav-number">7.</span> <span class="nav-text">理解类加载器的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
             
 
           </div>

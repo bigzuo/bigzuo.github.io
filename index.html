@@ -270,6 +270,315 @@
   
 
   <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/05/31/troubleshooting-long-gc-pauses/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="大左">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大左官博">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/05/31/troubleshooting-long-gc-pauses/" itemprop="url">
+                  【翻译】JMV GC 停顿时间过长问题排查
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-31T20:18:26+08:00">
+                2017-05-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java-JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">Java/JVM</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/05/31/troubleshooting-long-gc-pauses/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/05/31/troubleshooting-long-gc-pauses/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>原文地址：<a href="https://blogs.oracle.com/poonam/troubleshooting-long-gc-pauses">Troubleshooting Long GC Pauses</a><br>个人兴趣翻译，能力有限，如有疏漏，请帮忙指正<a href="https://bigzuo.github.io/">bigzuo.github.io</a>。  </p>
+</blockquote>
+<p>较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。<br>在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场景，并分析我们应该如何诊断和排查这些问题。<br>
+          <!--noindex-->
+          <div class="post-button text-center">
+            <a class="btn" href="/2017/05/31/troubleshooting-long-gc-pauses/#more" rel="contents">
+              阅读全文 &raquo;
+            </a>
+          </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/05/16/dig-into-java-class-loader/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="大左">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="大左官博">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                
+                <a class="post-title-link" href="/2017/05/16/dig-into-java-class-loader/" itemprop="url">
+                  深入理解 Java 类加载器及类加载机制
+                </a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-05-16T21:50:55+08:00">
+                2017-05-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+            <span class="post-category" >
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">分类于</span>
+              
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java-JVM/" itemprop="url" rel="index">
+                    <span itemprop="name">Java/JVM</span>
+                  </a>
+                </span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+                <a href="/2017/05/16/dig-into-java-class-loader/#comments" itemprop="discussionUrl">
+                  <span class="post-comments-count ds-thread-count" data-thread-key="2017/05/16/dig-into-java-class-loader/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
+<p>什么是SPI？SPI类加载机制？动手实现？</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://tomcat.apache.org/tomcat-8.0-doc/class-loader-howto.html" target="_blank" rel="external">Tomcat 8: Class Loader HOW-TO</a><br><a href="https://yq.aliyun.com/articles/2890" target="_blank" rel="external">深入浅出ClassLoader（译）</a><br><a href="https://www.zhihu.com/question/38472316/answer/79729218" target="_blank" rel="external">java的反射通过类名加载类和ClassLoader通过类名加载类有什么区别？</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/" target="_blank" rel="external">深入探讨 Java 类加载器</a><br><a href="http://wiki.metawerx.net/wiki/JARFilesYouShouldNeverIncludeInYourWebapp" target="_blank" rel="external">JAR files you should never include in your web-app</a><br><a href="http://shuhucy.iteye.com/blog/1900231" target="_blank" rel="external">Tomcat启动时类加载顺序及运行时类载入顺序</a><br><a href="http://wiki.jikexueyuan.com/project/tomcat/classloading.html" target="_blank" rel="external">Tomcat 8 类加载机制</a><br><a href="http://www.cnblogs.com/xing901022/p/4574961.html" target="_blank" rel="external">图解Tomcat类加载机制</a><br><a href="https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function" target="_blank" rel="external">Signature (functions)</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="external">How to deal with LinkageErrors in Java?</a><br><a href="http://tcljava.sourceforge.net/docs/TclJava/JavaSignatures.html" target="_blank" rel="external">Java Signatures</a><br><a href="http://stackoverflow.com/questions/1993493/error-servlet-jar-not-loaded-offending-class-javax-servlet-servlet-class" target="_blank" rel="external">Error: Servlet Jar not Loaded… Offending class: javax/servlet/Servlet.class</a><br><a href="http://blog.csdn.net/yangcheng33/article/details/52631940#reply" target="_blank" rel="external">真正理解线程上下文类加载器（多案例分析）</a></p>
+
+          
+        
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+    <div>
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
     <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/04/14/distribute-unique-id-renewal/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1403,7 +1712,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
           
             <div class="site-state-item site-state-posts">
               <a href="/archives">
-                <span class="site-state-item-count">7</span>
+                <span class="site-state-item-count">9</span>
                 <span class="site-state-item-name">日志</span>
               </a>
             </div>
