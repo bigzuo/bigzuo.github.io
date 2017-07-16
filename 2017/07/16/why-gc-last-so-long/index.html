@@ -1,0 +1,785 @@
+<!doctype html>
+
+
+
+
+<html class="theme-next pisces" lang="zh-Hans">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+  
+  
+  
+  
+
+  
+    
+    
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+    
+    
+    <link href="//fonts.googleapis.com/css?family=Lato:300,300italic,400,400italic,700,700italic&subset=latin,latin-ext" rel="stylesheet" type="text/css">
+  
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.0" rel="stylesheet" type="text/css" />
+
+
+  <meta name="keywords" content="Java/JVM," />
+
+
+
+
+
+
+
+
+  <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico?v=5.1.0" />
+
+
+
+
+
+
+<meta name="description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  
+首先我们检查了JVM参数配置，具体参数如下：  
+1-Xms768M -Xmx768M -X">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么Java GC 耗时这么长？">
+<meta property="og:url" content="https://bigzuo.github.io/2017/07/16/why-gc-last-so-long/index.html">
+<meta property="og:site_name" content="勤于自省，砥砺前行">
+<meta property="og:description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  
+首先我们检查了JVM参数配置，具体参数如下：  
+1-Xms768M -Xmx768M -X">
+<meta property="og:image" content="https://bigzuo.coding.me/bigzuo/images/java_meminfo.png">
+<meta property="og:updated_time" content="2017-07-16T11:43:36.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="为什么Java GC 耗时这么长？">
+<meta name="twitter:description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  
+首先我们检查了JVM参数配置，具体参数如下：  
+1-Xms768M -Xmx768M -X">
+<meta name="twitter:image" content="https://bigzuo.coding.me/bigzuo/images/java_meminfo.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    sidebar: {"position":"left","display":"post","offset":12,"offset_float":0,"b2t":false,"scrollpercent":false},
+    fancybox: true,
+    motion: false,
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="https://bigzuo.github.io/2017/07/16/why-gc-last-so-long/"/>
+
+
+
+
+
+  <title> 为什么Java GC 耗时这么长？ | 勤于自省，砥砺前行 </title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+
+
+
+
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><script type="text/javascript">
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?b0ce291946fa137f1cd1f0b1fe046177";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+
+
+
+
+
+
+  
+  
+    
+  
+
+  <div class="container one-collumn sidebar-position-left page-post-detail ">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">勤于自省，砥砺前行</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            分类
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            关于
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal " itemscope itemtype="http://schema.org/Article">
+    <link itemprop="mainEntityOfPage" href="https://bigzuo.github.io/2017/07/16/why-gc-last-so-long/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="BIGZUO">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="勤于自省，砥砺前行">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+            
+            
+              
+                为什么Java GC 耗时这么长？
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-16T19:31:17+08:00">
+                2017-07-16
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
+<p>首先我们检查了JVM参数配置，具体参数如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">-Xms768M -Xmx768M -XX:MaxNewSize=256m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC -XX:+PrintGCTimeStamps -verbose:gc -Xloggc:logs/gc.log</div></pre></td></tr></table></figure>
+<p>我们服务器配置是1核2G，实际可用空间是1.7G，因此结合我们的JVM配置，发现当前配置并无不合理之处。并且测试环境应用请求量并不大，所以也解释不了请求卡顿的原因。<br><a id="more"></a><br>然后，我们就查看了一下GC日志。结果从GC日志中发现应用在新生代垃圾回收时，耗时很长，因此造成服务长时间停顿。从下面的日志可以看出，<strong>一次新生代垃圾回收，居然耗时84.6s</strong>。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Heap after GC invocations=139 (full 4):</div><div class="line"> par new generation   total 235968K, used 18749K [0x00000000d0000000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  eden space 209792K,   0% used [0x00000000d0000000, 0x00000000d0000000, 0x00000000dcce0000)</div><div class="line">  from space 26176K,  71% used [0x00000000de670000, 0x00000000df8bf780, 0x00000000e0000000)</div><div class="line">  to   space 26176K,   0% used [0x00000000dcce0000, 0x00000000dcce0000, 0x00000000de670000)</div><div class="line"> concurrent mark-sweep generation total 524288K, used 263584K [0x00000000e0000000, 0x0000000100000000, 0x0000000100000000)</div><div class="line"> Metaspace       used 104919K, capacity 108067K, committed 109632K, reserved 1144832K</div><div class="line">  class space    used 12627K, capacity 13455K, committed 13756K, reserved 1048576K</div><div class="line">&#125;</div><div class="line">&#123;Heap before GC invocations=139 (full 4):</div><div class="line"> par new generation   total 235968K, used 228541K [0x00000000d0000000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  eden space 209792K, 100% used [0x00000000d0000000, 0x00000000dcce0000, 0x00000000dcce0000)</div><div class="line">  from space 26176K,  71% used [0x00000000de670000, 0x00000000df8bf780, 0x00000000e0000000)</div><div class="line">  to   space 26176K,   0% used [0x00000000dcce0000, 0x00000000dcce0000, 0x00000000de670000)</div><div class="line"> concurrent mark-sweep generation total 524288K, used 263584K [0x00000000e0000000, 0x0000000100000000, 0x0000000100000000)</div><div class="line"> Metaspace       used 104920K, capacity 108067K, committed 109632K, reserved 1144832K</div><div class="line">  class space    used 12627K, capacity 13455K, committed 13756K, reserved 1048576K</div><div class="line">2017-06-02T03:31:33.092+0800: 29548.385: [GC (Allocation Failure) 2017-06-02T03:31:34.196+0800: 29548.586: [ParNew: 228541K-&gt;26176K(2968K), 84.6730786 secs] 492125K-&gt;291501K(760256K), 87.0223483 secs] [Times: user=0.07 sys=0.02, real=87.00 secs]</div></pre></td></tr></table></figure>
+<blockquote>
+<p>正常情况下，应用一般都会配置输出GC日志，但是输出信息都比较简单，不会像上面输出这么详细，不足以满足问题排查的需要。所以我们增加了“-XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps” 等相关参数，增加GC日志的输出信息。  </p>
+</blockquote>
+<p>通过上面的日志可以确定是应用的GC活动造成的请求响应停顿。那么问题来了，为什么应用的垃圾回收会耗时这么长呢？  </p>
+<h2 id="GC耗时为何这么长？"><a href="#GC耗时为何这么长？" class="headerlink" title="GC耗时为何这么长？"></a>GC耗时为何这么长？</h2><p>通过执行<code>jstat -gcutil &lt;PID&gt; 500</code>命令查看各分区的使用率变化，可以看到当新生代的Eden区使用率达到100%时，触发了一次新生代的垃圾回收，并且恰好此时Survivor0和Survivor1区空间使用率也都达到100%。随着新生代垃圾回收的进行，老年代（Old区）的空间使用率也在逐渐增加，但是增加非常缓慢。然后随后因为新生代没有足够空间分配新增对象，系统还触发了一次<strong>Full GC</strong>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">S0     S1     E       O      M     CCS     YGC    YGCT    FGC    FGCT     GCT</div><div class="line">0.00 100.00  99.81  64.21  95.79  92.61    457  456.966    12   96.089  553.056</div><div class="line">0.00 100.00  99.85  64.21  95.79  92.61    457  456.966    12   96.089  553.056</div><div class="line">99.97 100.00 100.00  64.21  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">99.97 100.00 100.00  64.24  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">99.97 100.00 100.00  64.25  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.51  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.51  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.53  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.57  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.64  95.79  92.61    458  456.966    12   96.089  553.056</div><div class="line">100.00 100.00 100.00  64.67  95.79  92.61    458  460.994    13   96.089  557.084</div><div class="line">100.00 100.00 100.00  64.67  95.79  92.61    458  460.994    13   96.089  557.084</div><div class="line">100.00 100.00 100.00  64.67  95.79  92.61    458  460.994    13   96.089  557.084</div><div class="line">100.00 100.00 100.00  64.67  95.79  92.61    458  460.994    13   96.089  557.084</div></pre></td></tr></table></figure>
+<p><strong>新生代回收期间，老年代仍有剩余空间保存新生代存活对象，但是新生代的垃圾回收和老年代的空间增长都非常缓慢，基本可以确定时间是消耗在对象转移操作上</strong>。那么，此时的服务器在做什么呢？通过在终端执行<code>vmstat 1</code>命令可以看到Linux系统的状态信息。从下面的输出中，我们可以看到虚拟内存使用已经超过1G（swpd参数），IO异常频繁（bi和bo参数），并且CPU大部分时间都在等待IO（wa参数）。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----</div><div class="line">r  b   swpd   free    buff  cache   si   so    bi    bo   in   cs us sy id wa st</div><div class="line">1  3 1157776 516932   1248  26892 17586 1970 17722  1970 1177 2675  2  7  0 90  1</div><div class="line">1  1 1191676 540880   1388  27124 10156 17170 10708 17196  985 1637  1 15  0 83  2</div><div class="line">0  5 1207336 559628   1404  27204  526 7892   564  7940  381  512  1  6  0 93  1</div><div class="line">0  7 1229464 567872   1532  27308  132 11086   226 11104  341  455  1  7  0 92  0</div><div class="line">0  7 1245776 601848   1568  19688  574 8162  1374  8186  456  668  1  7  0 92  1</div><div class="line">0  8 1245752 605248   1540  15588  100    0   184    62  288  464  1  1  0 99  0</div><div class="line">0  7 1245184 603424   3568  15856 2098    0  5684    40  522  725  2  4  0 93  1</div><div class="line">0  3 1254304 590780   4808  22780 10174 5564 15214  5586 1085 1393  7 18  0 74  1</div></pre></td></tr></table></figure>
+<p>看到这里的时候，就可以断定是<strong>系统大量使用了虚拟内存，并且垃圾回收期间，无效对象的回收和存活对象空间的转移引发了大量的swap空间交换，具体就是JVM进行GC时，需要对堆已使用的空间进行遍历。如果有一部分内容被交换到swap中，遍历到这部分内容时就要将其换回内存，同时如果内存空间不足，这时还需要将内存中堆的一部分换到swap中，于是遍历堆空间的过程中，极端情况会把整个堆空间轮流往swap中读写一遍。而系统读取swap空间的数据速度又非常慢，并且公司对云主机又进一步限制了IO读写的速度，所以导致垃圾回收过程非常缓慢，进而引起系统响应卡顿</strong>。  </p>
+<p>但是系统为什么会用这么多虚拟内存空间呢？在之前的理解中，一般是在物理内存不够的情况下，系统才会使用虚拟内存。我们通过<code>top</code>命令输出服务器内存及swap使用率：<strong>发现在还有剩余内存的时候，系统就已经开始用swap了</strong>。这是为什么呢？Linux有一个内核参数<code>vm.swappiness</code>，控制当内存使用达到多少的时候，就开始使用swap。该参数值范围从0到100，当该参数=0，表示尽可能使用物理内存，避免swap空间交换;该参数=100，表示尽可能使用swap空间，这也告诉内核疯狂的将数据移出物理内存移到swap缓存中。我们通过<code>cat /proc/sys/vm/swappiness</code>命令查看Linux系统这个参数设置的值是多少，我们测试环境服务器设置的值是Linux系统的默认值60。  </p>
+<p>当我们把这个参数设置成0，并把物理内存增加到4G后，再执行<code>vmstat 1</code>命令，可以看到系统IO操作已经减少很多，并且CPU时间用于等待IO的比例几乎降为0，说明系统基本不再发生swap空间交换操作。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">[root@SHB-L0042573 bin]# vmstat 1</div><div class="line">procs -----------memory---------- ---swap-- -----io---- --system-- -----cpu-----</div><div class="line"> r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st</div><div class="line"> 0  0      0 964484   8088 1224640    0    0   773   862  171   63  2  2 77 19  0</div><div class="line"> 0  0      0 964500   8088 1224656    0    0     0     0  550  623  1  1 98  0  0</div><div class="line"> 0  0      0 964236   8096 1224648    0    0     0    48  717  828  1  3 68 27  1</div><div class="line"> 0  0      0 964252   8096 1224664    0    0     0    24  552  642  1  0 99  0  0</div><div class="line"> 0  0      0 964484   8096 1224664    0    0     0     0  681  783  1  2 97  0  1</div><div class="line"> 0  0      0 964532   8104 1224660    0    0     0    92  568  686  1  1 96  2  1</div><div class="line"> 0  0      0 961380   8104 1224664    0    0     0     4  667  772  3  4 93  0  1</div></pre></td></tr></table></figure>
+<p>我们再看一下现在垃圾回收的时间，已经降到正常水平，基本都在0.1s以内完成。再统计请求响应时间，结果也一切正常。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div></pre></td><td class="code"><pre><div class="line">Heap after GC invocations=306 (full 61):</div><div class="line"> par new generation   total 235968K, used 26176K [0x00000000d0000000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  eden space 209792K,   0% used [0x00000000d0000000, 0x00000000d0000000, 0x00000000dcce0000)</div><div class="line">  from space 26176K, 100% used [0x00000000de670000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  to   space 26176K,   0% used [0x00000000dcce0000, 0x00000000dcce0000, 0x00000000de670000)</div><div class="line"> concurrent mark-sweep generation total 524288K, used 302719K [0x00000000e0000000, 0x0000000100000000, 0x0000000100000000)</div><div class="line"> Metaspace       used 122506K, capacity 126633K, committed 127156K, reserved 1161216K</div><div class="line">  class space    used 14502K, capacity 15433K, committed 15580K, reserved 1048576K</div><div class="line">&#125;</div><div class="line">&#123;Heap before GC invocations=306 (full 61):</div><div class="line"> par new generation   total 235968K, used 235968K [0x00000000d0000000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  eden space 209792K, 100% used [0x00000000d0000000, 0x00000000dcce0000, 0x00000000dcce0000)</div><div class="line">  from space 26176K, 100% used [0x00000000de670000, 0x00000000e0000000, 0x00000000e0000000)</div><div class="line">  to   space 26176K,   0% used [0x00000000dcce0000, 0x00000000dcce0000, 0x00000000de670000)</div><div class="line"> concurrent mark-sweep generation total 524288K, used 302719K [0x00000000e0000000, 0x0000000100000000, 0x0000000100000000)</div><div class="line"> Metaspace       used 122511K, capacity 126639K, committed 127156K, reserved 1161216K</div><div class="line">  class space    used 14502K, capacity 15434K, committed 15580K, reserved 1048576K</div><div class="line">2017-06-03T10:51:41.998+0800: 62566.282: [GC (Allocation Failure) 2017-06-03T10:51:41.998+0800: 62566.283: [ParNew: 235968K-&gt;26176K(235968K), 0.0586496 secs] 538687K-&gt;344177K(760256K), 0.0591796 secs] [Times: user=0.08 sys=0.00, real=0.06 secs]</div></pre></td></tr></table></figure>
+<h2 id="Java进程为什么会占用这么多虚拟内存？"><a href="#Java进程为什么会占用这么多虚拟内存？" class="headerlink" title="Java进程为什么会占用这么多虚拟内存？"></a>Java进程为什么会占用这么多虚拟内存？</h2><p>现在问题解决了，但是在解决问题的过程中，产生了一个疑问：<strong>Java进程为什么会占用这么多虚拟内存</strong>？我们看一下在排查问题的过程中<code>top</code>命令的输出信息：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">top - 16:46:07 up 44 days,  6:28,  1 user,  load average: 0.06, 0.45, 0.73</div><div class="line">Tasks: 155 total,   1 running, 148 sleeping,   6 stopped,   0 zombie</div><div class="line">Cpu(s):  1.2%us,  0.8%sy,  0.0%ni, 92.3%id,  5.0%wa,  0.0%hi,  0.2%si,  0.5%st</div><div class="line">Mem:   3792408k total,  2847332k used,   945076k free,    28264k buffers</div><div class="line">Swap:  6291452k total,   184688k used,  6106764k free,   797164k cached</div><div class="line"></div><div class="line">   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND</div><div class="line"> 71995 wls81     20   0 4561m 1.7g 7244 S  3.7 46.1 144:16.27 java</div><div class="line">  2806 root      20   0  107m 1692  744 S  0.3  0.0  44:40.43 OSWatcher.sh</div></pre></td></tr></table></figure>
+<p>我们可以看到应用系统Java进程用了4.5G虚拟内存（VIRT参数），但是我们配置的Java进程可以使用的最大堆空间是1.5G。那么Java进程使用的空间为什么比我们设置的最大堆空间大这么多呢？  </p>
+<p>首先我们要明白，一个Linux进程所占用的虚拟内存包括了这个进程所需要的所有空间，比如堆空间、程序代码、依赖的第三方库、数据等所占用的空间，这些空间并不一定是进程实际运行所占用的空间。就像公司里面给每个人分配了一个2平方米大小的工位，但是我们每个人才实际占用约0.5平方米。其中2平方米就类似于进程占用的虚拟内存，0.5平方米就是进程运行时占用的实际空间。明白这个后，我们再继续分析Java进程的空间占用。<br>Java进程和运行在Linux系统上的其他进程一样，内存占用都由几部分组成：<strong>内核内存 + 代码区 + 数据区 + 堆区 + 栈区 + 未使用区域</strong>，区别在于JVM为了减少系统调用次数及内存空间和用户空间之间的数据拷贝（如Java NIO），将很多本属于操作系统管理的区域也移植到了JVM内部，并且JVM对堆空间也做了更加细致的分区。  </p>
+<p><img src="https://bigzuo.coding.me/bigzuo/images/java_meminfo.png" alt=""></p>
+<blockquote>
+<p>该图引用自<a href="https://tech.meituan.com/linux-jvm-memory.html" target="_blank" rel="external">Linux与JVM的内存关系分析</a></p>
+</blockquote>
+<p>因此，<strong>应用程序占用的内存空间 ≈ [-Xmx] + [-XX:MaxPermSize] + number_of_threads * [-Xss] + Java NIO</strong>。但是JVM本身运行也需要空间，比如GC操作、JIT优化、JNI代码等所占用的空间，所以Java进程所占用的内存空间，一定会比我们设置的最大堆空间要大。  </p>
+<p>除此之外，还有一点非常重要但是很少有人提及的是Java线程最终映射的还是Linux操作系统的线程，Linux操作系统为了解决多线程内存分配竞争的问题，在创建线程时，会为每一个线程分配一定的虚拟内存空间（也可称之为缓冲区），使得线程之间相互独立，互不干扰。然而这部分虚拟内存只有在实际使用时，才会分配物理内存。但是这部分“空间”也被统计在了虚拟内存中。在64位的Linux操作系统上，为每个线程分配的虚拟内存是64M。相信大部分Java程序都是以多线程的方式运行，因此虚拟内存的占用一般都比较高，不过一般情况下都不用在意。  </p>
+<h2 id="小结"><a href="#小结" class="headerlink" title="小结"></a>小结</h2><p>这次排查问题还是用了挺长时间，过程中也走了一些弯路，比如在很多次调整JVM参数都没有效果的时候，我尝试改过这个参数：  </p>
+<pre><code>-XX:CMSInitiatingOccupancyFraction=80  //老年代使用达到多少时，就触发老年代的回收
+</code></pre><p>后来才明白，JVM默认的92%是合理的，因为老年代增长本身比较慢，改成80%后，反而会造成部分空间浪费。<br>其次就是思路和经验很重要，以后还要更多的积累。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://plumbr.eu/blog/memory-leaks/why-does-my-java-process-consume-more-memory-than-xmx" target="_blank" rel="external">Why does my Java process consume more memory than Xmx?</a><br><a href="https://stackoverflow.com/questions/561245/virtual-memory-usage-from-java-under-linux-too-much-memory-used" target="_blank" rel="external">Virtual Memory Usage from Java under Linux, too much memory used</a><br><a href="http://tech.meituan.com/linux-jvm-memory.html" target="_blank" rel="external">Linux与JVM的内存关系分析</a><br><a href="http://www.cnblogs.com/seasonsluo/p/java_virt.html" target="_blank" rel="external">Java 进程占用 VIRT 虚拟内存超高的问题研究</a><br><a href="http://www.cnblogs.com/springsource/p/6097736.html" target="_blank" rel="external">死磕内存篇 — JAVA进程和linux内存间的大小关系</a><br><a href="http://blog.csdn.net/chen19870707/article/details/43202679" target="_blank" rel="external">为什么linux下多线程程序如此消耗虚拟内存</a>  </p>
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+    <div>
+      
+        
+
+      
+    </div>
+
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/Java-JVM/" rel="tag"># Java/JVM</a>
+          
+        </div>
+      
+
+      
+        
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/31/troubleshooting-long-gc-pauses/" rel="next" title="【翻译】JMV GC 停顿时间过长问题排查">
+                <i class="fa fa-chevron-left"></i> 【翻译】JMV GC 停顿时间过长问题排查
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+          
+          </div>
+          
+
+
+          
+   <div class="comments" id="comments">
+     
+          <div id="uyan_frame"></div>
+     
+   </div>
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap" >
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <img class="site-author-image" itemprop="image"
+               src="https://gss0.baidu.com/-Po3dSag_xI4khGko9WTAnF6hhy/zhidao/wh%3D600%2C800/sign=b8a7114665d9f2d320442ce999dca62b/34fae6cd7b899e51cce014b345a7d933c8950d2e.jpg"
+               alt="BIGZUO" />
+          <p class="site-author-name" itemprop="name">BIGZUO</p>
+           
+              <p class="site-description motion-element" itemprop="description">The best time to plant a tree is ten years ago, then is now.</p>
+          
+        </div>
+        <nav class="site-state motion-element">
+
+          
+            <div class="site-state-item site-state-posts">
+              <a href="/archives">
+                <span class="site-state-item-count">10</span>
+                <span class="site-state-item-name">日志</span>
+              </a>
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-categories">
+              
+                <span class="site-state-item-count">3</span>
+                <span class="site-state-item-name">分类</span>
+              
+            </div>
+          
+
+          
+            
+            
+            <div class="site-state-item site-state-tags">
+              
+                <span class="site-state-item-count">1</span>
+                <span class="site-state-item-name">标签</span>
+              
+            </div>
+          
+
+        </nav>
+
+        
+
+        <div class="links-of-author motion-element">
+          
+        </div>
+
+        
+        
+
+        
+        
+
+        
+
+
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#是什么导致请求响应很慢？"><span class="nav-number">1.</span> <span class="nav-text">是什么导致请求响应很慢？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GC耗时为何这么长？"><span class="nav-number">2.</span> <span class="nav-text">GC耗时为何这么长？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Java进程为什么会占用这么多虚拟内存？"><span class="nav-number">3.</span> <span class="nav-text">Java进程为什么会占用这么多虚拟内存？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#小结"><span class="nav-number">4.</span> <span class="nav-text">小结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright" >
+  
+  &copy; 
+  <span itemprop="copyrightYear">2017</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">BIGZUO</span>
+</div>
+
+
+<div class="powered-by">
+  由 <a class="theme-link" href="https://hexo.io">Hexo</a> 强力驱动
+</div>
+
+<div class="theme-info">
+  主题 -
+  <a class="theme-link" href="https://github.com/iissnan/hexo-theme-next">
+    NexT.Pisces
+  </a>
+</div>
+
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({"HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"], linebreaks: { automatic:true }, EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50) },
+ tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno",skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']},
+ TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } }, Macros: { href: "{}" } },
+ messageStyle: "none"
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Queue(function() {
+ var all = MathJax.Hub.getAllJax(), i;
+ for(i=0; i < all.length; i += 1) {
+ all[i].SourceElement().parentNode.className += ' has-jax';
+ }
+ });
+</script>
+<script charset="utf-8" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+        
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+    
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.0"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.0"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.0"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.0"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.0"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.0"></script>
+
+
+
+  
+
+  
+    
+  
+
+  
+    <!-- UY BEGIN -->
+    <div id="uyan_frame"></div>
+    <script type="text/javascript" src="http://v2.uyan.cc/code/uyan.js?uid=2135540"></script>
+    <!-- UY END --><!-- hexo-inject:begin --><!-- Begin: Injected MathJax -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({"tex2jax":{"inlineMath":[["$","$"],["\\(","\\)"]],"skipTags":["script","noscript","style","textarea","pre","code"],"processEscapes":true},"TeX":{"equationNumbers":{"autoNumber":"AMS"}}});
+</script>
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Queue(function() {
+    var all = MathJax.Hub.getAllJax(), i;
+    for(i=0; i < all.length; i += 1) {
+      all[i].SourceElement().parentNode.className += ' has-jax';
+    }
+  });
+</script>
+
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<!-- End: Injected MathJax -->
+<!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+  
+  
+
+  
+
+  
+
+  
+
+  
+
+
+  
+
+</body>
+</html>
