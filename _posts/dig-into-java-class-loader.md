@@ -1,7 +1,12 @@
 ---
-title: 深入理解 Java 类加载器及类加载机制
-date: 2017-05-16 21:50:55
-categories: Java/JVM
+layout:     post
+title:      深入理解 Java 类加载器及类加载机制
+date:       2017-05-16 21:50:55
+header-img: img/backgroud.png
+catalog: true
+tags:
+    - Java/JVM
+    - 开源框架
 ---
 
 ## 什么是类加载器
