@@ -1,7 +1,7 @@
 # Site settings
 title: Bigzuo`s Blog
 SEOTitle: bigzuo 的博客 | Bigzuo`s Blog
-header-img: img/post-bg-desk.jpg
+header-img: img/header-img.png
 email: zuoforward@gmail.com
 description: "Every failure is leading towards success."
 keyword: "By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX"
@@ -12,7 +12,7 @@ github_repo: "https://github.com/bigzuo/bigzuo.github.io.git" # you code reposit
 # Sidebar settings
 sidebar: true                           # whether or not using Sidebar.
 sidebar-about-description: "Goals determine what you going to be!"
-sidebar-avatar: /img/backgroud.jpg.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+sidebar-avatar: /img/backgroud.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
 
 
 
