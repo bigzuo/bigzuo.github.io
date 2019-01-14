@@ -1,8 +1,9 @@
+---
 title: NGINX 缓存机制使用不当引发的系统故障
-date: 2017-08-26 21:09:17
+date: 2018-02-26 21:09:33
 tags: NGINX/Openresty
 
-
+---
 
 ## Shared_dict 共享内存数据丢失
 
