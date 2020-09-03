@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="原文地址：Troubleshooting Long GC Pauses个人兴趣翻译，能力有限，如有疏漏，请帮忙指正bigzuo.github.io。    较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【翻译】JMV GC 停顿时间过长问题排查">
+<meta property="og:url" content="http://yoursite.com/2017/05/31/troubleshooting-long-gc-pauses/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="原文地址：Troubleshooting Long GC Pauses个人兴趣翻译，能力有限，如有疏漏，请帮忙指正bigzuo.github.io。    较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-03T12:40:09.478Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【翻译】JMV GC 停顿时间过长问题排查">
+<meta name="twitter:description" content="原文地址：Troubleshooting Long GC Pauses个人兴趣翻译，能力有限，如有疏漏，请帮忙指正bigzuo.github.io。    较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/31/troubleshooting-long-gc-pauses/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>【翻译】JMV GC 停顿时间过长问题排查 | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/31/troubleshooting-long-gc-pauses/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">【翻译】JMV GC 停顿时间过长问题排查
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-05-31 20:18:26" itemprop="dateCreated datePublished" datetime="2017-05-31T20:18:26+08:00">2017-05-31</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/05/31/troubleshooting-long-gc-pauses/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/05/31/troubleshooting-long-gc-pauses/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <blockquote>
+<p>原文地址：<a href="https://blogs.oracle.com/poonam/troubleshooting-long-gc-pauses" target="_blank" rel="noopener">Troubleshooting Long GC Pauses</a><br>个人兴趣翻译，能力有限，如有疏漏，请帮忙指正<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">bigzuo.github.io</a>。  </p>
+</blockquote>
+<p>较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。<br>在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场景，并分析我们应该如何诊断和排查这些问题。<br><a id="more"></a> </p>
+<h2 id="原因"><a href="#原因" class="headerlink" title="原因"></a>原因</h2><p>下面是应用程序运行时可能会导致GC长时间停顿的几种场景。</p>
+<h2 id="1、JVM-堆（heap）中有碎片"><a href="#1、JVM-堆（heap）中有碎片" class="headerlink" title="1、JVM 堆（heap）中有碎片"></a>1、JVM 堆（heap）中有碎片</h2><p>Java 堆中的碎片可能会引起频繁的GC活动，并且有可能引起GC长时间停顿。这种情况在CMS垃圾收集器并发收集时老年代空间没有启用碎片压缩时出现的可能性更大一点。<br>CMS垃圾收集器工作时，由于老年代中存在碎片，年轻代收集时会遇到<strong>“promotion failures”</strong>问题，进而引起<strong>“Concurrent Mode Failure”</strong>失败，最终会触发比并发收集耗时更长的<strong>Full GC</strong>的<strong>stop-the-world</strong>行为。<br>这些碎片可能会导致直接在老年代分配对象失败，因而引起<strong>Full GC</strong>，尽管老年代还有很多剩余空间。频繁的碎片导致对象分配失败会造成频繁的<strong>Full GC</strong>，从而从总体上增加了应用的停顿时间。<br>下面这段CMS收集器的日志显示出在老年代有大量的碎片，导致新生代回收时出现<strong>“promotion failures”</strong>异常，并且引起CMS回收时<strong>“Concurrent Mode Failure”</strong>。进而引起一次耗时达到17.1365396s的<strong>Full GC</strong>。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br></pre></td><td class="code"><pre><span class="line">&#123;Heap before GC invocations=7430 (full 24):</span><br><span class="line">par new</span><br><span class="line">generation total 134400K, used 121348K</span><br><span class="line">[0x53000000, 0x5c600000, 0x5c600000)</span><br><span class="line">eden space</span><br><span class="line">115200K, 99% used [0x53000000,</span><br><span class="line">0x5a07e738, 0x5a080000)</span><br><span class="line">from space</span><br><span class="line">19200K, 32% used [0x5a080000,</span><br><span class="line">0x5a682cc0, 0x5b340000)</span><br><span class="line">to space 19200K, 0% used [0x5b340000, 0x5b340000, 0x5c600000)</span><br><span class="line">concurrent</span><br><span class="line">mark-sweep generation total 2099200K, used 1694466K [0x5c600000, 0xdc800000, 0xdc800000)</span><br><span class="line">concurrent-mark-sweep perm gen total 409600K,</span><br><span class="line">used 186942K [0xdc800000, 0xf5800000, 0xfbc00000)</span><br><span class="line">10628.167: [GC Before GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 103224160</span><br><span class="line">Max Chunk Size:</span><br><span class="line">5486</span><br><span class="line">Number of Blocks: 57345</span><br><span class="line">Av. Block Size: 1800</span><br><span class="line">Tree Height:</span><br><span class="line">36</span><br><span class="line">Statistics for IndexedFreeLists:</span><br><span class="line">--------------------------------</span><br><span class="line">Total Free Space: 371324</span><br><span class="line">Max Chunk Size:</span><br><span class="line">254</span><br><span class="line">Number of Blocks: 8591 &lt;---- High fragmentation</span><br><span class="line">Av. Block Size: 43</span><br><span class="line">free=103595484</span><br><span class="line">frag=1.0000 &lt;---- High fragmentation</span><br><span class="line">Before GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">Tree Height: 0</span><br><span class="line">Statistics for IndexedFreeLists:</span><br><span class="line">--------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">free=0 frag=0.0000</span><br><span class="line">10628.168: [ParNew (promotion failed)</span><br><span class="line">Desired survivor size 9830400 bytes, new threshold 1 (max</span><br><span class="line">1)</span><br><span class="line">- age 1: 4770440 bytes, 4770440 total</span><br><span class="line">: 121348K-&gt;122157K(134400K), 0.4263254 secs]10628,594:</span><br><span class="line">[CMS10630.887: [CMS-concurrent-mark: 7.286/8.682 secs] [Times: user=14.81</span><br><span class="line">sys=0.34, real=8.68 secs] (concurrent mode failure):</span><br><span class="line">1698044K-&gt;625427K(2099200K), 17.1365396 secs]</span><br><span class="line">1815815K-&gt;625427K(2233600K), [CMS Perm : 186942K-&gt;180711K(409600K)]After</span><br><span class="line">GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 377269492</span><br><span class="line">Max Chunk Size:</span><br><span class="line">377269492</span><br><span class="line">Number of Blocks: 1</span><br><span class="line">Av. Block Size: 377269492</span><br><span class="line">Tree Height: 1</span><br><span class="line">Statistics for IndexedFreeLists:</span><br><span class="line">--------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">free=377269492</span><br><span class="line">frag=0.0000</span><br><span class="line">After GC:</span><br><span class="line">Statistics for BinaryTreeDictionary:</span><br><span class="line">------------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">Tree Height: 0</span><br><span class="line">Statistics for IndexedFreeLists:</span><br><span class="line">--------------------------------</span><br><span class="line">Total Free Space: 0</span><br><span class="line">Max Chunk Size: 0</span><br><span class="line">Number of Blocks: 0</span><br><span class="line">free=0 frag=0.0000</span><br><span class="line">, 17.5645589 secs] [Times: user=17.82 sys=0.06,</span><br><span class="line">real=17.57 secs]</span><br><span class="line">Heap after GC invocations=7431 (full 25):</span><br><span class="line">par new</span><br><span class="line">generation total 134400K, used 0K</span><br><span class="line">[0x53000000, 0x5c600000, 0x5c600000)</span><br><span class="line">eden space</span><br><span class="line">115200K, 0% used [0x53000000,</span><br><span class="line">0x53000000, 0x5a080000)</span><br><span class="line">from space</span><br><span class="line">19200K, 0% used [0x5b340000,</span><br><span class="line">0x5b340000, 0x5c600000)</span><br><span class="line">to space 19200K, 0% used [0x5a080000, 0x5a080000, 0x5b340000)</span><br><span class="line">concurrent</span><br><span class="line">mark-sweep generation total 2099200K, used 625427K [0x5c600000, 0xdc800000,</span><br><span class="line">0xdc800000)</span><br><span class="line">concurrent-mark-sweep perm gen total 409600K,</span><br><span class="line">used 180711K [0xdc800000, 0xf5800000, 0xfbc00000)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>应用程序停顿的时间总共有17.5730653s。</p>
+<h2 id="2、GC期间系统在做其他操作"><a href="#2、GC期间系统在做其他操作" class="headerlink" title="2、GC期间系统在做其他操作"></a>2、GC期间系统在做其他操作</h2><p>有些时候垃圾回收期间发生的一些系统操作也会引起GC停顿时间变长，比如swap空间交换或者网络活动。这些都有可能导致几秒到几分钟的停顿。<br>如果你的系统配置了使用swap空间，那么操作系统就会把JVM进程一些不活跃的空间转移到虚拟内存，以便可以释放内存空间给当前进程的活跃线程或系统的其他进程。由于需要操作速度比物理内存慢很多的硬盘，因此swap空间交换是代价非常昂贵的操作。所以，如果在GC期间系统需要swap空间交换，那么GC就会持续更长的时间。<br>下面是一段新生代GC持续了29.47s的日志：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">&#123;Heap before GC invocations=132 (full 0):</span><br><span class="line">par new</span><br><span class="line">generation total 2696384K, used</span><br><span class="line">2696384K [0xfffffffc20010000, 0xfffffffce0010000, 0xfffffffce0010000)</span><br><span class="line">eden space</span><br><span class="line">2247040K, 100% used [0xfffffffc20010000, 0xfffffffca9270000,</span><br><span class="line">0xfffffffca9270000)</span><br><span class="line">from space</span><br><span class="line">449344K, 100% used [0xfffffffca9270000, 0xfffffffcc4940000, 0xfffffffcc4940000)</span><br><span class="line">to space 449344K, 0% used [0xfffffffcc4940000,</span><br><span class="line">0xfffffffcc4940000, 0xfffffffce0010000)</span><br><span class="line">concurrent</span><br><span class="line">mark-sweep generation total 9437184K, used 1860619K [0xfffffffce0010000,</span><br><span class="line">0xffffffff20010000, 0xffffffff20010000)</span><br><span class="line">concurrent-mark-sweep perm gen total 1310720K,</span><br><span class="line">used 511451K [0xffffffff20010000, 0xffffffff70010000, 0xffffffff70010000)</span><br><span class="line">2013-07-17T03:58:06.601-0700: 51522.120: [GC Before GC: :</span><br><span class="line">2696384K-&gt;449344K(2696384K), 29.4779282 secs]</span><br><span class="line">4557003K-&gt;2326821K(12133568K) ,29.4795222 secs] [Times: user=915.56</span><br><span class="line">sys=6.35, real=29.48 secs]</span><br></pre></td></tr></table></figure>
+<p>相应的系统<strong>‘vmstat’</strong>命令在03:58输出的日志如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">kthr memory page disk faults cpu</span><br><span class="line">r b w swap free re mf pi</span><br><span class="line">po fr de sr s0 s1 s2 s3 in sy cs us sy id</span><br><span class="line">20130717_035806 0 0 0 77611960 94847600 55 266 0 0 0 0 0</span><br><span class="line">0 0 0 0 3041 2644 2431 44 8 48</span><br><span class="line">20130717_035815 0 0 0 76968296 94828816 79 324 0 18 18 0</span><br><span class="line">0 0 0 1 0 3009 3642 2519 59 13 28</span><br><span class="line">20130717_035831 1 0 0 77316456 94816000 389 2848 0 7 7 0</span><br><span class="line">0 0 0 2 0 40062 78231 61451 42 6 53</span><br><span class="line">20130717_035841 2 0 0 77577552 94798520 115 591 0 13 13 0</span><br><span class="line">0 13 12 1 0 4991 8104 5413 2 0 98</span><br></pre></td></tr></table></figure>
+<p>这次<strong>Minor GC</strong>持续了约29s。相对应的在此期间系统<strong>‘vmstat’</strong>命令输出信息显示系统可用的swap空间减少了差不多600M。这意味着在GC期间一些当前进程非必须的内存页从物理内存中被移到了swap空间。<br>从上面的信息可以看出，系统的物理内存不够所有运行在系统上面的进程使用。解决的方式就是运行尽量少的进程，同时增加更多的物理内存。上面的日志展示永久代配置的最大使用空间是9G，但是仅有1.8G使用了物理内存。因此有效的解决方式是减少堆空间的大小，减少物理内存的压力，尽量避免或者减少swap空间的交换活动。<br>除了swap空间交换，我们也要监控在GC期间是否有IO操作或者网络活动。这两项可以使用<strong>‘iostat’</strong>和<strong>‘netstat’</strong>工具监控。同样使用<strong>‘mpstat’</strong>工具输出CPU统计信息观察GC停顿期间是否有可用的CPU资源也非常有用。</p>
+<h2 id="3、过小的堆空间配置"><a href="#3、过小的堆空间配置" class="headerlink" title="3、过小的堆空间配置"></a>3、过小的堆空间配置</h2><p>如果应用程序占用的空间超过我们为JVM设置的最大堆空间，那么就会导致频繁的GC操作。因为堆空间过小，为对象分配空间的请求失败，JVM就会调用GC操作，释放空间。但是由于每次GC并不能够释放足够的空间，因此越来越多的对象分配失败的请求会引起更多的GC调用。<br>对应用程序而言，<strong>Full GC</strong>会引起更长的应用停顿。如下面的日志所示，因为永久代空间基本已经满了，所以在永久代分配对象的操作失败，触发了一次<strong>Full GC</strong>：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">166687.013: [Full GC [PSYoungGen:</span><br><span class="line">126501K-&gt;0K(922048K)] [PSOldGen: 2063794K-&gt;1598637K(2097152K)]</span><br><span class="line">2190295K-&gt;1598637K(3019200K) [PSPermGen: 165840K-&gt;164249K(166016K)],</span><br><span class="line">6.8204928 secs] [Times: user=6.80 sys=0.02, real=6.81 secs]</span><br><span class="line">166699.015: [Full GC [PSYoungGen:</span><br><span class="line">125518K-&gt;0K(922048K)] [PSOldGen: 1763798K-&gt;1583621K(2097152K)]</span><br><span class="line">1889316K-&gt;1583621K(3019200K) [PSPermGen: 165868K-&gt;164849K(166016K)],</span><br><span class="line">4.8204928 secs] [Times: user=4.80 sys=0.02, real=4.81 secs]</span><br></pre></td></tr></table></figure>
+<p>类似的因老年代剩余空间过小导致的对象在老年代分配失败或者<strong>“promotion failures”</strong>也会触发频繁的<strong>Full GC</strong>。<br>这种问题的解决方案就是根据应用平均使用空间的大小合理配置JVM堆的大小。</p>
+<h2 id="4、JVM的bug"><a href="#4、JVM的bug" class="headerlink" title="4、JVM的bug"></a>4、JVM的bug</h2><p>JVM的一些bug也会引起GC长时间停顿，比如下面列出的一些JVM bug就有可能造成Java程序长时间的GC停顿：  </p>
+<ul>
+<li>6459113: <a href="http://bugs.java.com/bugdatabase/view_bug.do?bug_id=6459113" target="_blank" rel="noopener">CMS+ParNew: wildly different ParNew<br>pause times depending on heap shape caused by allocation spread</a><br>– fixed in JDK 6u1 and 7  </li>
+<li>6572569: <a href="http://bugs.java.com/view_bug.do?bug_id=6572569" target="_blank" rel="noopener">CMS: consistently skewed work<br>distribution indicated in (long) re-mark pauses</a><br>– fixed in JDK 6u4 and 7</li>
+<li>6631166: <a href="http://bugs.java.com/view_bug.do?bug_id=6631166" target="_blank" rel="noopener">CMS: better heuristics when combatting<br>fragmentation</a><br>– fixed in JDK 6u21 and 7</li>
+<li>6999988: <a href="http://bugs.java.com/view_bug.do?bug_id=6999988" target="_blank" rel="noopener">CMS: Increased fragmentation leading to<br>promotion failure after CR#6631166 got implemented</a><br>– fixed in JDK 6u25 and 7</li>
+<li>6683623: <a href="http://bugs.java.com/view_bug.do?bug_id=6683623" target="_blank" rel="noopener">G1: use logarithmic BOT code such as<br>used by other collectors</a><br>– fixed in JDK 6u14 and 7</li>
+<li>6976350: <a href="http://bugs.java.com/view_bug.do?bug_id=6976350" target="_blank" rel="noopener">G1: deal with fragmentation while<br>  copying objects during GC</a><br>– fixed in JDK 8  </li>
+</ul>
+<p>如果你正在运行的JVM版本包含以上bug，请升级到其他修复版本。</p>
+<h2 id="5、显示调用系统GC"><a href="#5、显示调用系统GC" class="headerlink" title="5、显示调用系统GC"></a>5、显示调用系统GC</h2><p>请检查一下是否有显示调用系统GC的操作。应用程序或者第三方模块的某些类对<code>System.gc()</code>方法的调用会引起<strong>stop-the-world</strong>的<strong>Full GC</strong>操作。这些显示的系统GC调用也会造成长时间停顿。  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">164638.058: [Full GC (System) [PSYoungGen: 22789K-&gt;0K(992448K)]</span><br><span class="line">[PSOldGen: 1645508K-&gt;1666990K(2097152K)] 1668298K-&gt;1666990K(3089600K)</span><br><span class="line">[PSPermGen: 164914K-&gt;164914K(166720K)], 5.7499132 secs] [Times: user=5.69</span><br><span class="line">sys=0.06, real=5.75 secs]</span><br></pre></td></tr></table></figure>
+<p>如果你正在使用RMI框架，并观察到有固定频率的<strong>Full GC</strong>发生，那么就是这些RMI框架的实现类在定时触发<code>System.gc()</code>方法调用。触发间隔可以通过下面两个系统配置项配置：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">-Dsun.rmi.dgc.server.gcInterval=n</span><br><span class="line">-Dsun.rmi.dgc.client.gcInterval=n</span><br></pre></td></tr></table></figure>
+<p>这两个配置项的默认值在JDK 1.4.2版本和5.0版本是60s，在JDK 6及以后的版本中，都是1小时。如果你想禁止因<code>System.gc()</code>方法调用引起的<strong>Full GC</strong>操作，可以在应用运行时增加这个<code>-XX:+DisableExplicitGC</code>JVM参数。</p>
+<h2 id="如何解决这个问题"><a href="#如何解决这个问题" class="headerlink" title="如何解决这个问题"></a>如何解决这个问题</h2><p>1、收集GC日志时配置上这些参数：<code>-XX:+PrintGCDetails -XX:+PrintHeapAtGC
+-XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintGCApplicationStoppedTime</code>。如果是CMS收集器，再增加<code>-XX:PrintFLSStatistics=2</code>这个配置。<br>这些GC日志可以给我们有关GC停顿的频率和性质的详细信息，即他们可以告诉我们GC停顿是发生在新生代还是老年代，以及停顿发生的频率等相关信息。  </p>
+<p>2、用Solaris和其他Linux平台上的<strong>‘iostat’</strong>、<strong>‘netstat’</strong>、<strong>‘mpstat’</strong>、<strong>‘vmstat’</strong>等系统工具或者Windows操作系统上的<a href="https://technet.microsoft.com/en-us/sysinternals/bb896645.aspx" target="_blank" rel="noopener">进程监视器</a>和任务管理器从全局监控系统的运行情况。  </p>
+<p>3、使用<a href="https://github.com/jewes/gchisto" target="_blank" rel="noopener">GCHisto</a>工具使GC日志可视化，发现哪些GC操作耗时较长，并发现这些GC的一些共性。  </p>
+<p>4、通过GC日志发现是否在Java堆中存在碎片。  </p>
+<p>5、监控配置的Java 堆空间是否够应用程序使用。  </p>
+<p>6、检查你的应用程序是否运行在包含已知的会导致GC长时间停顿的bug的JVM版本。如果是，就升级到新的修复版本。</p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/05/16/dig-into-java-class-loader/" rel="next" title="深入理解 Java 类加载器及类加载机制">
+                <i class="fa fa-chevron-left"></i> 深入理解 Java 类加载器及类加载机制
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/07/16/why-gc-last-so-long/" rel="prev" title="为什么Java GC耗时这么长？">
+                为什么Java GC耗时这么长？ <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#原因"><span class="nav-number">1.</span> <span class="nav-text">原因</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1、JVM-堆（heap）中有碎片"><span class="nav-number">2.</span> <span class="nav-text">1、JVM 堆（heap）中有碎片</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2、GC期间系统在做其他操作"><span class="nav-number">3.</span> <span class="nav-text">2、GC期间系统在做其他操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3、过小的堆空间配置"><span class="nav-number">4.</span> <span class="nav-text">3、过小的堆空间配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4、JVM的bug"><span class="nav-number">5.</span> <span class="nav-text">4、JVM的bug</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5、显示调用系统GC"><span class="nav-number">6.</span> <span class="nav-text">5、显示调用系统GC</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#如何解决这个问题"><span class="nav-number">7.</span> <span class="nav-text">如何解决这个问题</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

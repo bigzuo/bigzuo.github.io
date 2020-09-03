@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？ 什么是SPI？SPI类加载机制？动手实现？ 参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解 Java 类加载器及类加载机制">
+<meta property="og:url" content="http://yoursite.com/2017/05/16/dig-into-java-class-loader/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？ 什么是SPI？SPI类加载机制？动手实现？ 参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-03T12:40:09.475Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="深入理解 Java 类加载器及类加载机制">
+<meta name="twitter:description" content="什么是类加载器JVM类加载机制Tomcat类加载机制Tomcat 类加载顺序和时间线程类加载器类加载器和容器什么是签名（signature）理解类加载器的作用接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？ 什么是SPI？SPI类加载机制？动手实现？ 参考资料Tomcat 8: Class Loader HOW-TO深入浅出ClassLoader（译）java的反射通过类名加载类和">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2017/05/16/dig-into-java-class-loader/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>深入理解 Java 类加载器及类加载机制 | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/16/dig-into-java-class-loader/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">深入理解 Java 类加载器及类加载机制
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-05-16 21:50:55" itemprop="dateCreated datePublished" datetime="2017-05-16T21:50:55+08:00">2017-05-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/05/16/dig-into-java-class-loader/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/05/16/dig-into-java-class-loader/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
+<p>什么是SPI？SPI类加载机制？动手实现？</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://tomcat.apache.org/tomcat-8.0-doc/class-loader-howto.html" target="_blank" rel="noopener">Tomcat 8: Class Loader HOW-TO</a><br><a href="https://yq.aliyun.com/articles/2890" target="_blank" rel="noopener">深入浅出ClassLoader（译）</a><br><a href="https://www.zhihu.com/question/38472316/answer/79729218" target="_blank" rel="noopener">java的反射通过类名加载类和ClassLoader通过类名加载类有什么区别？</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/" target="_blank" rel="noopener">深入探讨 Java 类加载器</a><br><a href="http://wiki.metawerx.net/wiki/JARFilesYouShouldNeverIncludeInYourWebapp" target="_blank" rel="noopener">JAR files you should never include in your web-app</a><br><a href="http://shuhucy.iteye.com/blog/1900231" target="_blank" rel="noopener">Tomcat启动时类加载顺序及运行时类载入顺序</a><br><a href="http://wiki.jikexueyuan.com/project/tomcat/classloading.html" target="_blank" rel="noopener">Tomcat 8 类加载机制</a><br><a href="http://www.cnblogs.com/xing901022/p/4574961.html" target="_blank" rel="noopener">图解Tomcat类加载机制</a><br><a href="https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function" target="_blank" rel="noopener">Signature (functions)</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="noopener">How to deal with LinkageErrors in Java?</a><br><a href="http://tcljava.sourceforge.net/docs/TclJava/JavaSignatures.html" target="_blank" rel="noopener">Java Signatures</a><br><a href="http://stackoverflow.com/questions/1993493/error-servlet-jar-not-loaded-offending-class-javax-servlet-servlet-class" target="_blank" rel="noopener">Error: Servlet Jar not Loaded… Offending class: javax/servlet/Servlet.class</a><br><a href="http://blog.csdn.net/yangcheng33/article/details/52631940#reply" target="_blank" rel="noopener">真正理解线程上下文类加载器（多案例分析）</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/04/14/distribute-unique-id-renewal/" rel="next" title="Twitter snowflake 分布式ID生成算法的简单改造">
+                <i class="fa fa-chevron-left"></i> Twitter snowflake 分布式ID生成算法的简单改造
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2017/05/31/troubleshooting-long-gc-pauses/" rel="prev" title="【翻译】JMV GC 停顿时间过长问题排查">
+                【翻译】JMV GC 停顿时间过长问题排查 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是类加载器"><span class="nav-number">1.</span> <span class="nav-text">什么是类加载器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#JVM类加载机制"><span class="nav-number">2.</span> <span class="nav-text">JVM类加载机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Tomcat类加载机制"><span class="nav-number">3.</span> <span class="nav-text">Tomcat类加载机制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Tomcat-类加载顺序和时间"><span class="nav-number">3.1.</span> <span class="nav-text">Tomcat 类加载顺序和时间</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#线程类加载器"><span class="nav-number">4.</span> <span class="nav-text">线程类加载器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#类加载器和容器"><span class="nav-number">5.</span> <span class="nav-text">类加载器和容器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是签名（signature）"><span class="nav-number">6.</span> <span class="nav-text">什么是签名（signature）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#理解类加载器的作用"><span class="nav-number">7.</span> <span class="nav-text">理解类加载器的作用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">8.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

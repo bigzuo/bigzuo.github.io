@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+<meta name="keywords" content="NGINX&#x2F;Openresty">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NGINX 缓存机制使用不当引发的系统故障">
+<meta property="og:url" content="http://yoursite.com/2018/02/26/NGINX缓存机制使用不当引发的系统故障/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-03T12:40:09.475Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="NGINX 缓存机制使用不当引发的系统故障">
+<meta name="twitter:description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/02/26/NGINX缓存机制使用不当引发的系统故障/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>NGINX 缓存机制使用不当引发的系统故障 | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/26/NGINX缓存机制使用不当引发的系统故障/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">NGINX 缓存机制使用不当引发的系统故障
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-02-26 21:09:33" itemprop="dateCreated datePublished" datetime="2018-02-26T21:09:33+08:00">2018-02-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
+<a id="more"></a>  
+<p>Lua 功能逻辑如下：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--只统计400以上的返回异常</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">status</span> &gt;= <span class="number">400</span> <span class="keyword">then</span> <span class="comment">--请求发生异常，HTTP code &gt; 400</span></span><br><span class="line">	count= shared_dict:get(cur_uri)</span><br><span class="line">    <span class="keyword">if</span> count == <span class="literal">nil</span> <span class="keyword">then</span></span><br><span class="line"><span class="number">1</span>、		shared_dict:set(cur_uri,<span class="number">1</span>)</span><br><span class="line"><span class="number">2</span>、		shared_dict:set(uri_last_decay_time_key,os_cur_time)</span><br><span class="line">		count = <span class="number">1</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	<span class="comment">--获取当前异常次数的值</span></span><br><span class="line"><span class="number">3</span>、		count = shared_dict:incr(cur_uri,<span class="number">1</span>)  <span class="comment">--异常次数加 1</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="number">4</span>、	<span class="keyword">if</span> count &gt;= <span class="built_in">tonumber</span>(max_fail_time) <span class="keyword">then</span>  <span class="comment">-- 如果异常次数超过阀值，则将该请求加入到黑名单中，执行过载策略。</span></span><br><span class="line">		ngx.<span class="built_in">log</span>(ngx.ERR, <span class="string">"nginx current request uri:"</span>, uri,<span class="string">" fail time is up to the max_fail_time,and will be added to black_list."</span>)</span><br><span class="line">		shared_dict:set(black_list_key,<span class="number">1</span>,black_list_time) <span class="comment">-- 将该请求加入异常黑名单</span></span><br><span class="line"><span class="number">5</span>、		shared_dict:delete(cur_uri)  <span class="comment">-- 请求加入黑名单后，会将 count 的值清空。</span></span><br><span class="line"><span class="number">6</span>、		shared_dict:delete(uri_last_decay_time_key)  <span class="comment">-- 然后也会将最近一次衰减时间点 last_decay_time的值清空。</span></span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="number">7</span>、	<span class="keyword">local</span> <span class="built_in">time</span> = shared_dict:get(uri_last_decay_time_key)<span class="comment">-- 获取最近一次衰减时间 last_decay_time，由于 last_decay_time的值被清空，所以此处取的time 值也是空。</span></span><br><span class="line"><span class="number">8</span>、	<span class="built_in">time</span> = os_cur_time-<span class="built_in">time</span>  <span class="comment">-- 由于time的值为空，导致在进行算术运算时，报空指针异常。异常信息见下文。</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">time</span> &gt;= <span class="built_in">tonumber</span>(decay_time) <span class="keyword">then</span></span><br><span class="line">		<span class="comment">--math.ceil()函数用户取整</span></span><br><span class="line"><span class="number">9</span>、		count = <span class="built_in">math</span>.<span class="built_in">ceil</span>(count/<span class="number">2</span>)  <span class="comment">-- 由于上面算术运算异常，导致这里一直不会执行，即count的值一直不会衰减，因此也会一直累加。知道达到阀值，被加入黑名单。</span></span><br><span class="line">		ngx.<span class="built_in">log</span>(ngx.DEBUG, <span class="string">"nginx current request uri:"</span>, uri,<span class="string">" fail time was be decayed,current count:"</span>, count)</span><br><span class="line">		shared_dict:set(cur_uri,count)</span><br><span class="line">		shared_dict:set(uri_last_decay_time_key,os_cur_time)</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>Lua 代码功能逻辑解析：</p>
+<ol>
+<li>Nginx lua 逻辑会统计请求的异常次数，每异常一次，计数器 count 就会加 1。然后会判断 count 是否大于阀值。</li>
+<li>当请求异常次数 count 大于阀值时，就会将请求加入到黑名单中，然后当请求再次进来时，就会执行我们自定义的过载限流逻辑。</li>
+<li>如果请求异常次数 count 小于阀值，就会判断请求异常次数 count 是否达到衰减时间。如果达到衰减时间，就会执行 count = count/2 操作。</li>
+<li>当请求再次异常时，重复 1 的操作。</li>
+</ol>
+<p>如下是异常日志：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2018</span>/<span class="number">02</span>/<span class="number">11</span> <span class="number">00</span>:<span class="number">06</span>:<span class="number">50</span> [error] <span class="number">796</span>#<span class="number">796</span>: *<span class="number">9925128</span> failed to run log_by_lua*: /wls/appsystems/lua-<span class="keyword">module</span>/request-statistics<span class="variable">.lua</span>:<span class="number">75</span>: attempt to perform arithmetic on <span class="keyword">local</span> '<span class="keyword">time</span>' (a nil value)</span><br><span class="line">stack traceback:</span><br><span class="line">/wls/appsystems/lua-<span class="keyword">module</span>/request-statistics<span class="variable">.lua</span>:<span class="number">75</span>: in <span class="keyword">function</span> &lt;/wls/appsystems/lua-<span class="keyword">module</span>/request-statistics<span class="variable">.lua</span>:<span class="number">1</span>&gt; <span class="keyword">while</span> logging request, client: <span class="number">172</span><span class="variable">.30</span><span class="variable">.17</span><span class="variable">.106</span>, server: nginx_servername_http, request: <span class="string">"POST /do/userLogin/checkSecToken HTTP/1.1"</span>, upstream: <span class="string">"http://127.0.0.1:8080/do/userLogin/checkSecToken"</span>, host: <span class="string">"mock.com.cn:80"</span></span><br></pre></td></tr></table></figure>
+<p>异常日志显示的是 “<code>local time = shared_dict:get(uri_last_decay_time_key)</code>” 应用从共享内存取到的内容为空。从代码逻辑来看，不可能会发生空指针的异常，如果执行到<strong>代码标记7处</strong>，该 key 对应共享内存中的 value 一定不为空。既然流程没有问题，那问题就可能是出现在代码所使用的 API 上，所以自己又从头阅读了一下NGINX 共享内存的官方文档，直到读到下面这段时才发现问题所在：</p>
+<p><a href="https://github.com/openresty/lua-nginx-module#ngxshareddictset" target="_blank" rel="noopener">官网描述：</a></p>
+<p>“When it fails to allocate memory for the current key-value item, then <code>set</code> will try removing existing items in the storage according to the Least-Recently Used (LRU) algorithm. Note that, LRU takes priority over expiration time here. If up to tens of existing items have been removed and the storage left is still insufficient (either due to the total capacity limit specified by <a href="https://github.com/openresty/lua-nginx-module#lua_shared_dict" target="_blank" rel="noopener">lua_shared_dict</a> or memory segmentation), then the <code>err</code> return value will be <code>no memory</code> and <code>success</code> will be <code>false</code>.”</p>
+<p>大意是说：当共享内存空间不足或者内存碎片太多、不足以为新对象分配空间时，会基于 LRU 算法清除掉部分元素，不管这些元素是否已经过期，并且在清除这些元素时，可能也不会有任何异常结果返回。而自己在使用共享内存时，一直把它当成本地 Redis 来使用，即内存不足时，会有提示告警（公司内部针对 Redis 服务监控发出的告警，Redis 本身并没有该功能），所以自己能提前发现问题。基于这个原因，本次异常就似乎可以解释了：</p>
+<ol>
+<li>当一个请求初次异常被 Nginx 统计时，会在 Nginx 的共享内存中，将 count 初始化为 1，last_decay_time 初始化为当前系统时间。所以，两个值都是非空（参考代码1、2两处）。</li>
+<li>但是 Nginx 的共享内存有个特性：当共享内存空间紧张时，会通过 LRU 算法，清除掉一些最近未使用元素，不管这些元素是否过期（Note that, LRU takes priority over expiration time here. ）。</li>
+<li>特殊情况下，count 和 last_decay_time 都可能会被清楚掉，如果count被清除掉，Nginx 会在下次请求异常时重新初始化，功能不受影响（参考代码1、2两处）；但是如果last_decay_time被清除掉后，会导致程序报上述空指针异常，并且count 值永远不会衰减，只会一直递增（参考代码7、8、9三处）。</li>
+<li>因此，只要某个请求持续偶尔有异常，并且程序运行时间足够长，count 的值一定会持续累加，直到超过阀值（参考代码3、4两处），然后被执行过载策略，误触发了系统异常。</li>
+</ol>
+<h2 id="问题复现"><a href="#问题复现" class="headerlink" title="问题复现"></a>问题复现</h2><p>为了复现生产问题，自己做了如下本地测试：</p>
+<p>为模拟 Nginx 共享内存 LRU 清理机制，下面代码在运行之初，首先在共享内存中设置几个 key，然后往共享内存中随机添加10000个元素，然后再取之前设置key 的值发现，这些值都为空，即已被清楚。</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 设置初始值</span></span><br><span class="line">limit_req_store:set(<span class="string">"testa"</span>,<span class="string">"a"</span>)</span><br><span class="line">limit_req_store:set(<span class="string">"testb"</span>,<span class="string">"b"</span>)</span><br><span class="line">limit_req_store:set(<span class="string">"testc"</span>,<span class="string">"c"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 向共享内存中添加任意元素</span></span><br><span class="line"><span class="keyword">for</span> i=<span class="number">1</span>,<span class="number">10000</span>,<span class="number">1</span> <span class="keyword">do</span></span><br><span class="line">	<span class="keyword">local</span> os_cur_time = <span class="built_in">os</span>.<span class="built_in">time</span>()</span><br><span class="line">	<span class="keyword">local</span> succ, err, forcible = limit_req_store:set(os_cur_time..<span class="string">":"</span>..i,<span class="number">1</span>)</span><br><span class="line">	<span class="keyword">if</span> forcible <span class="keyword">then</span></span><br><span class="line">		ngx.<span class="built_in">log</span>(ngx.ERR,<span class="string">"forcible="</span>,forcible)</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br><span class="line"></span><br><span class="line"><span class="comment">-- 然后取之前设置的 key 的值</span></span><br><span class="line"><span class="keyword">local</span> testa = limit_req_store:get(<span class="string">"testa"</span>)</span><br><span class="line"><span class="keyword">local</span> testb = limit_req_store:get(<span class="string">"testb"</span>)</span><br><span class="line"><span class="keyword">local</span> testc = limit_req_store:get(<span class="string">"testc"</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">-- 当任意初始设置的值丢失时，输出对应日志</span></span><br><span class="line"><span class="keyword">if</span> (testa ==<span class="literal">nil</span> <span class="keyword">or</span> testb ==<span class="literal">nil</span> <span class="keyword">or</span> testc ==<span class="literal">nil</span>) <span class="keyword">then</span></span><br><span class="line">	ngx.<span class="built_in">log</span>(ngx.ERR,<span class="string">"testa="</span>,testa, <span class="string">", testb="</span>,testb,<span class="string">", testc="</span>,testc)</span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>
+<p>日志输出：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2018/02/28 20:15:53 [error] 4587#0: *1 [lua] request-statistics.lua:21: testa=nil, testb=nil, testc=nil while logging request, client: 127.0.0.1, server: localhost, request: &quot;POST /smp_portal HTTP/1.1&quot;, upstream: &quot;&lt;http://127.0.0.1:8080/test&gt;&quot;, host: &quot;localhost:80”</span><br></pre></td></tr></table></figure>
+<p>不过需要注意的是，由于对官方文档这句话 “<strong>either due to the total capacity limit specified by <a href="https://github.com/openresty/lua-nginx-module#lua_shared_dict" target="_blank" rel="noopener">lua_shared_dict</a> or memory segmentation</strong>” 的误解，我最初以为当 NGINX 实例内存空间不足时，就算共享内存的使用没有超过最初申请的大小时，也会因为整体空间不足而清除部分元素，后来和 Openresty 官方的维护人员讨论时才理解清楚：共享内存是 master 进程统一提前分配好的，空间大小不会因为主机内存不足而动态变化。如果主机内存空间不够，操作系统内核会负责做 page in page out 来扩展应用程序使用的空间。</p>
+<h2 id="Proxy-cache-引发的异常结果缓存"><a href="#Proxy-cache-引发的异常结果缓存" class="headerlink" title="Proxy_cache 引发的异常结果缓存"></a>Proxy_cache 引发的异常结果缓存</h2><p>自己在使用 NGINX 的 proxy_cache 时也引发过一次故障：公司搞促销活动，为提高系统响应，我就将个别配置类接口按接口级别粒度配置了 proxy_cache 缓存，在缓存有效内，所有请求都在 NGINX 直接返回，只有缓存失效才回溯到 upstream 服务获取最新结果。使用了 proxy_cache 后，系统 QPS 大幅提高，不过就在大促活动的前几天，部分配置了 proxy_cache 的接口在某些时间段出现大量异常响应。最初怀疑是 upstream 服务出现了异常，但是仔细分析后发现后台服务基本都正常。最后才定位的问题所在：使用 proxy_cache 时，NGINX 不管 upstream 服务返回的结果是什么，只有响应是“200” 或 “304”就会缓存对应的结果。特殊情况下，NGINX 缓存失效，请求达到后台服务，而恰好后台服务又因数据库、网络等原因没有正常处理请求，虽然 HTTP code 是正确的，但是包含了业务信息的响应体却是错误的。NGINX 就缓存了错误的结果，那么在接下来一段时间内，所有请求到这个 NGINX 实例上的请求返回的都是异常结果。最终优化了缓存方案，才解决这个问题。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">http &#123;</span><br><span class="line">    ...</span><br><span class="line">    proxy_cache_path /wls/appsystem/proxy_cache levels=1:2 keys_zone=melco:500m inactive=30m max_size=1000m use_temp_path=off; #proxy_cache 初始化配置</span><br><span class="line">    ...</span><br><span class="line">    server &#123;</span><br><span class="line">        listen       80;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        # NGINX proxy_cache 配置示例</span><br><span class="line">        location ^~ /littleRedDot/getLittleRedDot &#123;</span><br><span class="line">            proxy_http_version 1.1;</span><br><span class="line">            proxy_set_header Connection &quot;&quot;;</span><br><span class="line"></span><br><span class="line">            #proxy_cache 配置</span><br><span class="line">            proxy_cache melco;</span><br><span class="line">            proxy_cache_methods GET HEAD POST;</span><br><span class="line">            proxy_cache_key $request_uri;</span><br><span class="line">            proxy_cache_valid 200 304 30m;</span><br><span class="line">            proxy_ignore_headers Set-Cookie;</span><br><span class="line">            proxy_hide_header Set-Cookie;</span><br><span class="line">            #proxy_cache 配置结束</span><br><span class="line"></span><br><span class="line">            proxy_set_header Host $host;</span><br><span class="line">            proxy_set_header X-Forwarded-Host $host;</span><br><span class="line">            proxy_set_header X-Real-IP $remote_addr;</span><br><span class="line">            proxy_set_header X-Forwarded-Server $host;</span><br><span class="line">            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;</span><br><span class="line"></span><br><span class="line">            proxy_pass http://backends;</span><br><span class="line">        &#125;</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/NGINX-Openresty/" rel="tag"># NGINX/Openresty</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2017/07/16/why-gc-last-so-long/" rel="next" title="为什么Java GC耗时这么长？">
+                <i class="fa fa-chevron-left"></i> 为什么Java GC耗时这么长？
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/08/12/nginx-400-error/" rel="prev" title="Nginx request line 换行导致的 400 异常分析">
+                Nginx request line 换行导致的 400 异常分析 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Shared-dict-共享内存数据丢失"><span class="nav-number">1.</span> <span class="nav-text">Shared_dict 共享内存数据丢失</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#问题复现"><span class="nav-number">2.</span> <span class="nav-text">问题复现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Proxy-cache-引发的异常结果缓存"><span class="nav-number">3.</span> <span class="nav-text">Proxy_cache 引发的异常结果缓存</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

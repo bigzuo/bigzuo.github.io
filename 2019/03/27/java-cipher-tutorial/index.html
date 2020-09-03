@@ -1,0 +1,1077 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="为什么使用 Java Cipher 要指定转换模式？">
+<meta property="og:url" content="http://yoursite.com/2019/03/27/java-cipher-tutorial/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-03T12:40:09.476Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="为什么使用 Java Cipher 要指定转换模式？">
+<meta name="twitter:description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2019/03/27/java-cipher-tutorial/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>为什么使用 Java Cipher 要指定转换模式？ | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/27/java-cipher-tutorial/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">为什么使用 Java Cipher 要指定转换模式？
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-27 20:42:33" itemprop="dateCreated datePublished" datetime="2019-03-27T20:42:33+08:00">2019-03-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2019/03/27/java-cipher-tutorial/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2019/03/27/java-cipher-tutorial/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] publicDecrypt(PublicKey publicKey, <span class="keyword">byte</span>[] encryptData) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">   <span class="keyword">byte</span>[] output;</span><br><span class="line">   Cipher cipher = Cipher.getInstance(<span class="string">"RSA"</span>);</span><br><span class="line">   cipher.init(Cipher.DECRYPT_MODE, publicKey);</span><br><span class="line">   output = cipher.doFinal(encryptData);</span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>我自己遇到的问题是：我在应用程序中使用上面的代码加密一些数据，运行时间超过一年，一直运行正常。后来服务器升级了JDK版本，从JDK7升级到了JDK8（具体小版本不清楚，且后来发现异常和 JDK 版本升级无关）。后来应用实例在重启时，偶尔会有个别应用实例在重启后对相同的内容的加密结果和其他实例的结果不一致，并且其他应用实例在解密其加密结果时，会报如下异常：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">javax<span class="variable">.crypto</span><span class="variable">.BadPaddingException</span>: Decryption error</span><br><span class="line">         at sun<span class="variable">.security</span><span class="variable">.rsa</span><span class="variable">.RSAPadding</span><span class="variable">.unpadV15</span>(RSAPadding<span class="variable">.java</span>:<span class="number">380</span>)</span><br><span class="line">         at sun<span class="variable">.security</span><span class="variable">.rsa</span><span class="variable">.RSAPadding</span><span class="variable">.unpad</span>(RSAPadding<span class="variable">.java</span>:<span class="number">291</span>)</span><br><span class="line">         at com<span class="variable">.sun</span><span class="variable">.crypto</span><span class="variable">.provider</span><span class="variable">.RSACipher</span><span class="variable">.doFinal</span>(RSACipher<span class="variable">.java</span>:<span class="number">356</span>)</span><br><span class="line">         at com<span class="variable">.sun</span><span class="variable">.crypto</span><span class="variable">.provider</span><span class="variable">.RSACipher</span><span class="variable">.engineDoFinal</span>(RSACipher<span class="variable">.java</span>:<span class="number">389</span>)</span><br><span class="line">         at javax<span class="variable">.crypto</span><span class="variable">.Cipher</span><span class="variable">.doFinal</span>(Cipher<span class="variable">.java</span>:<span class="number">2165</span>)</span><br><span class="line">         at com<span class="variable">.paic</span><span class="variable">.palife</span><span class="variable">.common</span><span class="variable">.util</span><span class="variable">.encry</span><span class="variable">.RSAUtils</span><span class="variable">.publicDecrypt</span>(RSAUtils<span class="variable">.java</span>:<span class="number">206</span>)</span><br><span class="line">         at com<span class="variable">.paic</span><span class="variable">.palife</span><span class="variable">.common</span><span class="variable">.util</span><span class="variable">.encry</span><span class="variable">.RSAUtils</span><span class="variable">.publicDecrypt</span>(RSAUtils<span class="variable">.java</span>:<span class="number">221</span>)</span><br><span class="line">         at com<span class="variable">.paic</span><span class="variable">.palife</span><span class="variable">.common</span><span class="variable">.util</span><span class="variable">.encry</span><span class="variable">.la</span><span class="variable">.LASecurityUtils</span><span class="variable">.verifySignature</span>(LASecurityUtils<span class="variable">.java</span>:<span class="number">90</span>)</span><br><span class="line">         at com<span class="variable">.paic</span><span class="variable">.palife</span><span class="variable">.common</span><span class="variable">.util</span><span class="variable">.encry</span><span class="variable">.la</span><span class="variable">.LASecurityUtils</span><span class="variable">.verifySignatureForParameters</span>(LASecurityUtils<span class="variable">.java</span>:<span class="number">124</span>)</span><br><span class="line">         at com<span class="variable">.pajk</span><span class="variable">.fingw</span><span class="variable">.service</span><span class="variable">.validate</span><span class="variable">.impl</span><span class="variable">.WealthNewNotifyValidateServiceImpl</span><span class="variable">.verifyRefundNotify</span>(WealthNewNotifyValidateServiceImpl<span class="variable">.java</span>:<span class="number">425</span>)</span><br><span class="line">         at com<span class="variable">.pajk</span><span class="variable">.fingw</span><span class="variable">.service</span><span class="variable">.validate</span><span class="variable">.impl</span><span class="variable">.WealthNewNotifyValidateServiceImpl</span><span class="variable">.refundNotifyValidate</span>(WealthNewNotifyValidateServiceImpl<span class="variable">.java</span>:<span class="number">219</span>)</span><br><span class="line">         at com<span class="variable">.pajk</span><span class="variable">.fingw</span><span class="variable">.service</span><span class="variable">.validate</span><span class="variable">.impl</span><span class="variable">.WealthNewNotifyValidateServiceImpl</span>$$FastClassBySpringCGLIB$$<span class="number">2</span>fc73ad4<span class="variable">.invoke</span>(&lt;generated&gt;)</span><br><span class="line">         at org<span class="variable">.springframework</span><span class="variable">.cglib</span><span class="variable">.proxy</span><span class="variable">.MethodProxy</span><span class="variable">.invoke</span>(MethodProxy<span class="variable">.java</span>:<span class="number">204</span>)</span><br></pre></td></tr></table></figure>
+<p>解决方式也很简单，只通过添加几个字符串即可：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] publicDecrypt(PublicKey publicKey, <span class="keyword">byte</span>[] encryptData) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">   <span class="keyword">byte</span>[] output;</span><br><span class="line">   Cipher cipher = Cipher.getInstance(<span class="string">"RSA/ECB/PKCS1Padding"</span>); <span class="comment">//指定转换模式即可</span></span><br><span class="line">   cipher.init(Cipher.DECRYPT_MODE, publicKey);</span><br><span class="line">   output = cipher.doFinal(encryptData);</span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在解决问题的过程中，自己就记录了对 Java cipher 的学习过程，方便后续参考。</p>
+<h2 id="What-is-Java-Cipher"><a href="#What-is-Java-Cipher" class="headerlink" title="What is Java Cipher?"></a>What is Java Cipher?</h2><p>在计算机系统中，<strong>Java Cryptography Architecture</strong> (<strong>JCA</strong>) 是一个使用 Java 编程语言处理加解密相关操作的框架。它是 Java 安全 API 的一部分，最早是在 JDK1.1 版本的<code>java.security</code>包中引入的。JCA 基于”<code>provider</code>“架构，并且包含一系列不同作用的 API，比如加密、秘钥生成与管理、安全随机数生成、证书验证等等。这些 API 为开发人员提供了在应用代码中集成安全操作的简易方式。</p>
+<p><strong>Java Cryptography Extension</strong> (<strong>JCE</strong>) 是 Java 平台的一个官方标准扩展，也是 JCA 体系的一部分。JCE 为加密、密码生成和管理、消息认证码等操作提供了一个框架和具体实现。其实 Java 平台本身就包含摘要生成、数字签名等操作的接口和具体实现，JCE 提供了一个更丰富的补充。而<code>javax.crypto.Cipher</code> 类则是 JCE 扩展的核心。</p>
+<h3 id="Cipher-实例化"><a href="#Cipher-实例化" class="headerlink" title="Cipher 实例化"></a>Cipher 实例化</h3><p>我们可以通过调用静态<code>getInstance</code>方法，传入具体的转换模式名称，就可以实例化一个 Cipher 对象。下面是实例化 Cipher 的示例代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Encryptor</span> </span>&#123;</span><br><span class="line">	<span class="keyword">public</span> <span class="keyword">byte</span>[] encryptMessage(<span class="keyword">byte</span>[] message, <span class="keyword">byte</span>[] keyBytes) </span><br><span class="line">  <span class="keyword">throws</span> InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException &#123;</span><br><span class="line">    Cipher cipher = Cipher.getInstance(<span class="string">"AES/ECB/PKCS5Padding"</span>);</span><br><span class="line">    <span class="comment">//...</span></span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="转换模式（transformation）的具体含义"><a href="#转换模式（transformation）的具体含义" class="headerlink" title="转换模式（transformation）的具体含义"></a>转换模式（transformation）的具体含义</h2><p>转换模式（transformation）是 Cipher 实例化的一个核心参数。transformation 参数的格式是：<strong>算法/工作模式/填充模式(algorithm/mode/padding)</strong>，如上述示例中<code>AES/ECB/PKCS5Padding</code>。</p>
+<h3 id="算法-Algorithm"><a href="#算法-Algorithm" class="headerlink" title="算法(Algorithm)"></a>算法(Algorithm)</h3><p>算法指的就是具体使用到的加解密算法的名称，且必须为英文字符串，如”AES”, “RSA”, “SHA-256” 等。</p>
+<h3 id="工作模式-Mode"><a href="#工作模式-Mode" class="headerlink" title="工作模式(Mode)"></a>工作模式(Mode)</h3><p>工作模式主要是指分组密码工作模式。分组密码工作模式允许使用同一组分组密码秘钥对于多于一块的数据进行加密，并保证其安全性。简单说就是将需要加密的原始信息分成固定长度的数据块，然后用分组密码对这些数据块进行加密。使用分组加密一般有如下场景：</p>
+<ul>
+<li>当需要加密的明文长度比较大，比如文件内容，由于硬件或者性能原因所以需要分组加密；</li>
+<li>多次使用相同的密钥对多个分组加密，会引发一些安全问题；</li>
+</ul>
+<p>分组密码工作模式本质上是一项增强密码算法或者使算法适应具体应用的技术，例如将分组密码应用于数据块组成的序列或者数据流。目前主要包括下面五种由NIST定义的工作模式：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">模式</th>
+<th style="text-align:center">名称</th>
+<th style="text-align:center">描述</th>
+<th style="text-align:center">典型应用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">电子密码本(ECB)</td>
+<td style="text-align:center">Electronic CodeBook</td>
+<td style="text-align:center">用相同的密钥分别对明文分组独立加密</td>
+<td style="text-align:center">单个数据的安全传输(例如一个加密密钥)</td>
+</tr>
+<tr>
+<td style="text-align:center">密码分组链接(CBC)</td>
+<td style="text-align:center">Cipher Block Chaining</td>
+<td style="text-align:center">加密算法的输入是上一个密文组合下一个明文组的异或</td>
+<td style="text-align:center">面向分组的通用传输或者认证</td>
+</tr>
+<tr>
+<td style="text-align:center">密文反馈(CFB)</td>
+<td style="text-align:center">Cipher FeedBack</td>
+<td style="text-align:center">一次处理s位，上一块密文作为加密算法的输入，产生的伪随机数输出与明文异或作为下一单元的密文</td>
+<td style="text-align:center">面向分组的通用传输或者认证</td>
+</tr>
+<tr>
+<td style="text-align:center">输出反馈(OFB)</td>
+<td style="text-align:center">Output FeedBack</td>
+<td style="text-align:center">与CFB类似，只是加密算法的输入是上一次加密的输出，并且使用整个分组</td>
+<td style="text-align:center">噪声信道上的数据流的传输(如卫星通信)</td>
+</tr>
+<tr>
+<td style="text-align:center">计数器(CTR)</td>
+<td style="text-align:center">Counter</td>
+<td style="text-align:center">每个明文分组都与一个经过加密的计数器相异或。对每个后续分组计数器递增</td>
+<td style="text-align:center">面向分组的通用传输或者用于高速需求</td>
+</tr>
+</tbody>
+</table>
+<h3 id="填充模式-Padding"><a href="#填充模式-Padding" class="headerlink" title="填充模式(Padding)"></a>填充模式(Padding)</h3><p>分组密码工作模式只能加密长度等于密码分组长度的单块数据，所以通常来讲，最后一块数据也需要使用合适填充方式将数据扩展到匹配密码块大小的长度。所以填充是指在加密之前，在原始信息的开头、结尾或者中间添加特定格式的数据，使被加密信息满足固定加密长度的操作。例如我们约定块的长度为128，但是需要加密的原文长度为129，那么需要分成两个加密块，第二个加密块需要填充127长度的数据，填充模式决定怎么填充数据。</p>
+<p>对数据在加密时进行填充、解密时去除填充则是通信双方需要重点考虑的因素。对原文进行填充，主要基于以下原因：</p>
+<ul>
+<li>首先，考虑安全性。由于对原始数据进行了填充，使原文能够“伪装”在填充后的数据中，使得攻击者很难找到真正的原文位置。</li>
+<li>其次，由于块加密算法要求原文数据长度为固定块大小的整数倍，如果加密原文不满足这个条件，则需要在加密前填充原文数据至固定块大小的整数倍。</li>
+<li>另外，填充也为发送方与接收方提供了一种标准的形式以约束加密原文的大小。只有加解密双方知道填充方式，才可知道如何准确移去填充的数据并进行解密。</li>
+</ul>
+<p>常用的填充方式至少有5种，不同编程语言实现加解密时用到的填充多数来自于这些方式或它们的变种方式。以下五种填充模式摘抄自参考资料的论文：</p>
+<p><strong>1.填充数据为填充字节序列的长度</strong>：</p>
+<p>这种填充方式中，填充字符串由一个字节序列组成，每个字节填充该字节序列的长度。假定块长度为8，原文数据长度为9，则填充字节数 等于0x07；如果明文数据长度为8的整数倍，则填充字节数为0x08。填充字符串如下：</p>
+<ul>
+<li>原文数据1: FF FF FF FF FF FF FF FF FF</li>
+<li>填充后数据1:FF FF FF FF FF FF FF FF FF 07 07 07 07 07 07 07</li>
+<li>==========================================================</li>
+<li>原文数据2:FF FF FF FF FF FF FF FF</li>
+<li>填充后数据2:FF FF FF FF FF FF FF FF 08 08 08 08 08 08 08 08</li>
+</ul>
+<p><strong>2.填充数据为0x80后加0x00</strong>：</p>
+<p>这种填充方式中，填充字符串的第一个字节数是0x80，后面的每个字节是0x00。假定块长度为8，原文数据长度为9或者为8的整数倍，则 填充字符串如下：</p>
+<ul>
+<li>原文数据1: FF FF FF FF FF FF FF FF FF</li>
+<li>填充后数据1:FF FF FF FF FF FF FF FF FF 80 00 00 00 00 00 00</li>
+<li>==========================================================</li>
+<li>原文数据2:FF FF FF FF FF FF FF FF</li>
+<li>填充后数据2:FF FF FF FF FF FF FF FF 80 00 00 00 00 00 00 00</li>
+</ul>
+<p><strong>3.填充数据的最后一个字节为填充字节序列的长度</strong>：</p>
+<p>这种填充方式中，填充字符串的最后一个字节为该序列的长度，而前面的字节可以是0x00，也可以是随机的字节序列。假定块长度为8，原文数据长度为9或者为8的整数倍，则填充字符串如下：</p>
+<ul>
+<li>原文数据1:FF FF FF FF FF FF FF FF FF</li>
+<li>填充后数据1:FF FF FF FF FF FF FF FF FF 00 00 00 00 00 00 07或FF FF FF FF FF FF FF FF FF 0A B0 0C 08 05 09 07</li>
+<li>===============================================================================</li>
+<li>原文数据2:FF FF FF FF FF FF FF FF</li>
+<li>填充后数据2:FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 08或FF FF FF FF FF FF FF FF 80 06 AB EA 03 02 01 08</li>
+</ul>
+<p><strong>4.填充数据为空格</strong>：</p>
+<p>这种填充方式中，填充字符串的每个字节为空格对应的字节数0x20。假定块长度为8，原文数据长度为9或者为8的整数倍，则填充字符串如下：</p>
+<ul>
+<li>原文数据1: FF FF FF FF FF FF FF FF FF</li>
+<li>填充后数据1:FF FF FF FF FF FF FF FF FF 20 20 20 20 20 20 20</li>
+<li>===============================================================================</li>
+<li>原文数据2:FF FF FF FF FF FF FF FF</li>
+<li>填充后数据2:FF FF FF FF FF FF FF FF 20 20 20 20 20 20 20 20</li>
+</ul>
+<p><strong>5.填充数据为0x00</strong>：</p>
+<p>这种填充方式中，填充字符串的每个字节为0x00。假定块长度为8，原文数据长度为9或者8的整数倍，则填充字符串如下：</p>
+<ul>
+<li>原文数据1: FF FF FF FF FF FF FF FF FF</li>
+<li>填充后数据1:FF FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00</li>
+<li>===============================================================================</li>
+<li>原文数据2:FF FF FF FF FF FF FF FF</li>
+<li>填充后数据2:FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00</li>
+</ul>
+<p>关于以上几种填充方式，需要补充说明的是：针对填充数据为<strong>0x00</strong>和<strong>空格</strong>的场景，如果原始数据尾部本身就包含<strong>0x00</strong>或<strong>空格</strong>，系统是无法区分哪些是填充的部分，哪些属于明文信息本身，所以<strong>0x00</strong>和<strong>空格</strong>填充模式是不可逆的。这种填充方式经常使用在消息内容的长度可以通过<a href="https://en.wikipedia.org/wiki/Out-of-band_data" target="_blank" rel="noopener">带外传输</a>或者消息内容本身不包含<strong>0x00</strong>和<strong>空格</strong>的场景。</p>
+<p>在了解了 transformation 含义后，从 <a href="https://docs.oracle.com/javase/7/docs/technotes/guides/security/SunProviders.html#cipherTable" target="_blank" rel="noopener">Oracle Java</a> 官网可以查到 JDK7 中 SunJCE Provider 支持的算法列表如下：</p>
+<table>
+<thead>
+<tr>
+<th>Algorithm Name</th>
+<th>Modes</th>
+<th>Paddings</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AES</td>
+<td>ECB, CBC, PCBC, CTR, CTS, CFB, CFB8..CFB128, OFB, OFB8..OFB128</td>
+<td>NOPADDING, PKCS5PADDING, ISO10126PADDING</td>
+</tr>
+<tr>
+<td>AESWrap</td>
+<td>ECB</td>
+<td>NOPADDING</td>
+</tr>
+<tr>
+<td>ARCFOUR</td>
+<td>ECB</td>
+<td>NOPADDING</td>
+</tr>
+<tr>
+<td>Blowfish, DES, DESede, RC2</td>
+<td>ECB, CBC, PCBC, CTR, CTS, CFB, CFB8..CFB64, OFB, OFB8..OFB64</td>
+<td>NOPADDING, PKCS5PADDING, ISO10126PADDING</td>
+</tr>
+<tr>
+<td>DESedeWrap</td>
+<td>CBC</td>
+<td>NOPADDING</td>
+</tr>
+<tr>
+<td>PBEWithMD5AndDES, PBEWithMD5AndTripleDES1PBEWithSHA1AndDESede, PBEWithSHA1AndRC2_40</td>
+<td>CBC</td>
+<td>PKCS5Padding</td>
+</tr>
+<tr>
+<td>RSA</td>
+<td>ECB</td>
+<td>NOPADDING, PKCS1PADDING, OAEPWITHMD5ANDMGF1PADDING, OAEPWITHSHA1ANDMGF1PADDING, OAEPWITHSHA-1ANDMGF1PADDING, OAEPWITHSHA-256ANDMGF1PADDING, OAEPWITHSHA-384ANDMGF1PADDING, OAEPWITHSHA-512ANDMGF1PADDING</td>
+</tr>
+</tbody>
+</table>
+<p>需要注意的是，并不是所有的加密算法和加密模式 Java 原生都支持。比如你可能需要安装外部的<code>Bouncy Castle</code> provider 来实例化一个满足特定加密模式和填充模式的 <code>Cipher</code> 。</p>
+<p>而自己这次遇到的问题原因就是在实例化 Cipher 时没有指定完整的转换模式名称，只写算法名称：<code>Cipher.getInstance(&quot;RSA&quot;)</code>。如果没有按照<code>algorithm/mode/padding</code>格式填写 transformation 参数，Java 平台会使用提供者提供的默认值。默认值会根据不同版本、不同提供者而不同，如果加解密双方都没有指定具体的 transformation 参数，并且 Java 平台使用的默认值又不同，则就出现了异常。</p>
+<h2 id="Cipher-APIs"><a href="#Cipher-APIs" class="headerlink" title="Cipher APIs"></a>Cipher APIs</h2><h3 id="Cipher-的7个属性"><a href="#Cipher-的7个属性" class="headerlink" title="Cipher 的7个属性"></a>Cipher 的7个属性</h3><table>
+<thead>
+<tr>
+<th style="text-align:left">Modifier and Type</th>
+<th style="text-align:left">Field and Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**DECRYPT_MODE**</code>用于解密模式下的 Cipher 初始化。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**ENCRYPT_MODE**</code>用于加密模式下的 Cipher 初始化。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**PRIVATE_KEY**</code>用于说明解包装模式下密钥是私钥。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**PUBLIC_KEY**</code>用于说明解包装模式下密钥是公钥。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**SECRET_KEY**</code>用于说明解包装模式下密钥是密钥。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**UNWRAP_MODE**</code>用于解包装密钥模式下的 Cipher 初始化。</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>static int</code></td>
+<td style="text-align:left"><code>**WRAP_MODE**</code>用于包装密钥模式下的 Cipher 初始化。</td>
+</tr>
+</tbody>
+</table>
+<p><code>SECRET_KEY</code> 模式一般用于不区分公私钥的对称加密场景。</p>
+<h3 id="Cipher-一般工作流程"><a href="#Cipher-一般工作流程" class="headerlink" title="Cipher 一般工作流程"></a>Cipher 一般工作流程</h3><h4 id="创建一个-Cipher-实例"><a href="#创建一个-Cipher-实例" class="headerlink" title="创建一个 Cipher 实例"></a>创建一个 Cipher 实例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Cipher cipher = Cipher.getInstance(<span class="string">"AES"</span>);</span><br></pre></td></tr></table></figure>
+<p><code>getInstance()</code>方法用于创建一个 Cipher 实例，这也是我们在使用 Cipher 时第一步要做的操作。上面一行代码就创建了一个使用 AES 加密算法的 Cipher 实例。<code>getInstance()</code>方法有几个不同的实现，但是最核心的参数都是<code>transformation</code>。一般情况下，我们应该按照<strong>algorithm/mode/padding</strong>格式填写转换模式全称，如<strong>AES/ECB/PKCS5Padding</strong>。</p>
+<h4 id="Cipher-初始化"><a href="#Cipher-初始化" class="headerlink" title="Cipher 初始化"></a>Cipher 初始化</h4><p>在我们使用 Cipher 实例进行加解密操作之前，我们需要调用<code>init()</code>方法进行初始化。<code>init()</code>方法一般有两个参数：</p>
+<ul>
+<li>加密/解密的模式</li>
+<li>加密/解密的密钥，或者是包含密钥的证书</li>
+</ul>
+<p>Cipher 初始化为加密模式代码示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Key key = ... // get / create symmetric encryption key</span><br><span class="line">cipher.init(Cipher.ENCRYPT_MODE, key);</span><br></pre></td></tr></table></figure>
+<p>Cipher 初始化为解密模式代码示例：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Key key = ... // get / create symmetric encryption key</span><br><span class="line">cipher.init(Cipher.DECRYPT_MODE, key);</span><br></pre></td></tr></table></figure>
+<h4 id="加密和解密数据"><a href="#加密和解密数据" class="headerlink" title="加密和解密数据"></a>加密和解密数据</h4><p>在初始化之后，我们就可以使用 Cipher 实例进行加解密操作了。大多数情况下，我们会使用到下面两个方法进行加解密：</p>
+<ul>
+<li><code>update()</code>，主要用于部分加密或者部分解密，至于加密或是解密取决于Cipher初始化时候的opmode。</li>
+<li><code>doFinal()</code>，主要功能是结束单部分或者多部分加密或者解密操作。</li>
+</ul>
+<p>上面两个方法都有多种不同的实现，但是功能都大同小异，感兴趣的可以查询官网 API 说明。这里只介绍最普遍的用法：</p>
+<p>如果你只是加密单个不大的数据块，那么可以使用<code>doFinal()</code>方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] plainText  = <span class="string">"abcdefghijklmnopqrstuvwxyz"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] cipherText = cipher.doFinal(plainText);</span><br></pre></td></tr></table></figure>
+<p>同样，你可以使用类似的代码进行解密，不过尤其要注意的是解密前要使用解密模式初始化 Cipher。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] plainText = cipher.doFinal(cipherText);</span><br></pre></td></tr></table></figure>
+<p>如果我们需要加/解密由多个数据块组成的信息，比如一个大文件，这个时候我们就需要调用<code>update()</code>方法分别对每一块数据进行加密，最后再调用<code>doFinal()</code>方法对最后一个数据块加密，比如如下代码示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">byte</span>[] data1 = <span class="string">"abcdefghijklmnopqrstuvwxyz"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] data2 = <span class="string">"zyxwvutsrqponmlkjihgfedcba"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] data3 = <span class="string">"01234567890123456789012345"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">byte</span>[] cipherText1 = cipher.update(data1);</span><br><span class="line"><span class="keyword">byte</span>[] cipherText2 = cipher.update(data2);</span><br><span class="line"><span class="keyword">byte</span>[] cipherText3 = cipher.doFinal(data3);</span><br></pre></td></tr></table></figure>
+<p>如上所述，<code>doFinal()</code>方法主要功能是结束单部分或者多部分加密或者解密操作。一般情况下，如果只加密单块数据，或者加密信息长度较短，无需分块，可以直接调用<code>doFinal()</code>方法进行加解密。如果进行多部分加密、或者加解密信息较大，这个时候就需要多次调用<code>update()</code>方法进行分块加解密，最后再调用<code>doFinal()</code>方法对最后一块内容加解密，进而结束整个加解密操作。因为对于很多加密算法，对所加密的数据长度都有固定要求，最后一块数据可能不满足加密长度。比如一个加密算法每次只能加密长度为8的信息，对于一个长度23的信息，调用两次<code>update()</code>方法后，最后剩余的数据长度是7，调用<code>doFinal()</code>方法就会根据 Cipher 实例化时指定的padding 模式填充到8的长度再进行加解密。</p>
+<h4 id="Cipher-实例重用"><a href="#Cipher-实例重用" class="headerlink" title="Cipher 实例重用"></a>Cipher 实例重用</h4><p>创建一个 Cipher 实例是一个特别消耗性能的操作，因此 Cipher 类设计时就考虑了可重用性。在正常情况下，调用<code>doFinal()</code>方法完成加解密操作时，Cipher 会重置成初始化即<code>cipher.init()</code>时的状态，可以继续进行下一轮加解密操作，这个特性可以有效降低每次创建 Cipher 实例的性能开销。</p>
+<p>Cipher 实例重用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Cipher cipher = Cipher.getInstance(<span class="string">"AES"</span>);</span><br><span class="line"></span><br><span class="line">Key key = ... <span class="comment">// get / create symmetric encryption key</span></span><br><span class="line">cipher.init(Cipher.ENCRYPT_MODE, key);</span><br><span class="line"></span><br><span class="line"><span class="keyword">byte</span>[] data1 = <span class="string">"abcdefghijklmnopqrstuvwxyz"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] data2 = <span class="string">"zyxwvutsrqponmlkjihgfedcba"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"></span><br><span class="line"><span class="keyword">byte</span>[] cipherText1 = cipher.update(data1);</span><br><span class="line"><span class="keyword">byte</span>[] cipherText2 = cipher.doFinal(data2);</span><br><span class="line"></span><br><span class="line"><span class="keyword">byte</span>[] data3 = <span class="string">"01234567890123456789012345"</span>.getBytes(<span class="string">"UTF-8"</span>);</span><br><span class="line"><span class="keyword">byte</span>[] cipherText3 = cipher.doFinal(data3);</span><br></pre></td></tr></table></figure>
+<h4 id="Cipher-包装和解包装密钥"><a href="#Cipher-包装和解包装密钥" class="headerlink" title="Cipher 包装和解包装密钥"></a>Cipher 包装和解包装密钥</h4><p>在 Cipher 的 API 中，有<code>wrap()</code>和<code>unwrap()</code>两个方法，这两个方法做的其实是一个互逆的操作：</p>
+<ul>
+<li>wrap方法的作用是把原始的密钥通过某种加密算法包装为加密后的密钥，这样就可以避免在传递密钥的时候泄漏了密钥的明文。</li>
+<li>unwrap方法的作用是把包装(加密)后的密钥解包装为原始的密钥，得到密钥的明文。</li>
+</ul>
+<p>这两个方法不是很常用，如下是使用的示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> EncryptUtils &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * 单例</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    SINGLETON;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String SECRECT = <span class="string">"passwrod"</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">wrap</span><span class="params">(String keyString)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        KeyGenerator keyGenerator = KeyGenerator.getInstance(<span class="string">"AES"</span>);</span><br><span class="line">        <span class="comment">//初始化密钥生成器，指定密钥长度为128，指定随机源的种子为指定的密钥(这里是"passward")</span></span><br><span class="line">        SecureRandom secureRandom = SecureRandom.getInstance(<span class="string">"SHA1PRNG"</span>);</span><br><span class="line">        secureRandom.setSeed(SECRECT.getBytes(<span class="string">"UTF-8"</span>));</span><br><span class="line">        keyGenerator.init(<span class="number">128</span>, secureRandom);</span><br><span class="line">        SecretKey secretKey = keyGenerator.generateKey();</span><br><span class="line">        SecretKeySpec secretKeySpec = <span class="keyword">new</span> SecretKeySpec(secretKey.getEncoded(), <span class="string">"AES"</span>);</span><br><span class="line">        Cipher cipher = Cipher.getInstance(<span class="string">"AES/ECB/PKCS5Padding"</span>);</span><br><span class="line">        cipher.init(Cipher.WRAP_MODE, secretKeySpec);</span><br><span class="line">        SecretKeySpec key = <span class="keyword">new</span> SecretKeySpec(keyString.getBytes(<span class="string">"UTF-8"</span>), <span class="string">"AES"</span>);</span><br><span class="line">        <span class="keyword">byte</span>[] bytes = cipher.wrap(key);</span><br><span class="line">        <span class="keyword">return</span> Hex.encodeHexString(bytes);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">unwrap</span><span class="params">(String keyString)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        <span class="keyword">byte</span>[] rawKey = Hex.decodeHex(keyString);</span><br><span class="line">        KeyGenerator keyGenerator = KeyGenerator.getInstance(<span class="string">"AES"</span>);</span><br><span class="line">        <span class="comment">//初始化密钥生成器，指定密钥长度为128，指定随机源的种子为指定的密钥(这里是"passward")</span></span><br><span class="line">        SecureRandom secureRandom = SecureRandom.getInstance(<span class="string">"SHA1PRNG"</span>);</span><br><span class="line">        secureRandom.setSeed(SECRECT.getBytes(<span class="string">"UTF-8"</span>));</span><br><span class="line">        keyGenerator.init(<span class="number">128</span>, secureRandom);</span><br><span class="line">        SecretKey secretKey = keyGenerator.generateKey();</span><br><span class="line">        SecretKeySpec secretKeySpec = <span class="keyword">new</span> SecretKeySpec(secretKey.getEncoded(), <span class="string">"AES"</span>);</span><br><span class="line">        Cipher cipher = Cipher.getInstance(<span class="string">"AES/ECB/PKCS5Padding"</span>);</span><br><span class="line">        cipher.init(Cipher.UNWRAP_MODE, secretKeySpec);</span><br><span class="line">        SecretKey key = (SecretKey) cipher.unwrap(rawKey, <span class="string">"AES"</span>, Cipher.SECRET_KEY);</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> String(key.getEncoded());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception </span>&#123;</span><br><span class="line">        String wrapKey = EncryptUtils.SINGLETON.wrap(<span class="string">"doge"</span>);</span><br><span class="line">        System.out.println(wrapKey);</span><br><span class="line">        System.out.println(EncryptUtils.SINGLETON.unwrap(wrapKey));</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+<p>需要说明的是，我在写本文时，大量的参考了<a href="http://www.throwable.club/2019/02/16/java-security-cipher/#JDK%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9D%97JCE%E6%A0%B8%E5%BF%83Cipher%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3" target="_blank" rel="noopener">JDK安全模块JCE核心Cipher使用详解</a>这篇非常优秀的博文，但是这篇博文里面有些小瑕疵：如果直接拿里面的示例运行，如果你不是 Windows 系统，则很有可能报如下错误：</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">"main"</span> java<span class="variable">.security</span><span class="variable">.InvalidKeyException</span>: The wrapped key is <span class="keyword">not</span> padded correctly</span><br><span class="line">	at com<span class="variable">.sun</span><span class="variable">.crypto</span><span class="variable">.provider</span><span class="variable">.CipherCore</span><span class="variable">.unwrap</span>(CipherCore<span class="variable">.java</span>:<span class="number">1121</span>)</span><br><span class="line">	at com<span class="variable">.sun</span><span class="variable">.crypto</span><span class="variable">.provider</span><span class="variable">.AESCipher</span><span class="variable">.engineUnwrap</span>(AESCipher<span class="variable">.java</span>:<span class="number">561</span>)</span><br><span class="line">	at javax<span class="variable">.crypto</span><span class="variable">.Cipher</span><span class="variable">.unwrap</span>(Cipher<span class="variable">.java</span>:<span class="number">2549</span>)</span><br><span class="line">	at com<span class="variable">.personal</span><span class="variable">.demo</span><span class="variable">.cipher</span><span class="variable">.EncryptUtils</span><span class="variable">.unwrap</span>(EncryptUtils<span class="variable">.java</span>:<span class="number">52</span>)</span><br><span class="line">	at com<span class="variable">.personal</span><span class="variable">.demo</span><span class="variable">.cipher</span><span class="variable">.EncryptUtils</span><span class="variable">.main</span>(EncryptUtils<span class="variable">.java</span>:<span class="number">59</span>)</span><br></pre></td></tr></table></figure>
+<p>这是因为原博文示例中密钥的生成使用了<code>SecureRandom</code>方法，但是这个方法在不同的平台表现并不一样。在 Windows 平台，它使用<code>SHA1PRNG</code>算法生成随机数，如果种子一样，那么生成的随机数也一定一样。但是在 Mac 平台，它使用<code>NativePRNG</code>算法生成随机数，就算种子一样，每次生成的随机数也不一样。所以，这就导致加解密时使用的密钥不一样，进而引起上述异常。使用<code>SecureRandom.getInstance(&quot;SHA1PRNG&quot;)</code>指定具体算法即可解决问题。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>在了解了 Java Cipher 原理及 transformation 参数说明后，我们后面再写 Java 加解密相关的代码时，就会根据需求自定义代码的实现，再也无需在网上不明所以的拷贝。并且以后遇到不同平台、不同语言用同一种加密算法实现的加解密操作不能互相加解密时，也能很快根据 transformation 参数信息排查问题原因。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="http://www.throwable.club/2019/02/16/java-security-cipher/#JDK%E5%AE%89%E5%85%A8%E6%A8%A1%E5%9D%97JCE%E6%A0%B8%E5%BF%83Cipher%E4%BD%BF%E7%94%A8%E8%AF%A6%E8%A7%A3" target="_blank" rel="noopener">JDK安全模块JCE核心Cipher使用详解</a></p>
+<p><a href="http://p2p.wrox.com/book-beginning-cryptography-java/87376-windows-mac-not-giving-same-results.html" target="_blank" rel="noopener">Windows and Mac not giving the same results</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Java_Cryptography_Architecture" target="_blank" rel="noopener">WIKI: Java Cryptography Architecture</a></p>
+<p><a href="https://en.wikipedia.org/wiki/Padding_%28cryptography%29" target="_blank" rel="noopener">WIKI: Padding (cryptography)</a></p>
+<p><a href="https://www.di-mgt.com.au/cryptopad.html" target="_blank" rel="noopener">Using Padding in Encryption</a></p>
+<p><a href="http://tutorials.jenkov.com/java-cryptography/cipher.html" target="_blank" rel="noopener">Java Cipher</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/12/15/nginx-https-forward-proxy/" rel="next" title="使用 Nginx 搭建 HTTPS 正向代理服务">
+                <i class="fa fa-chevron-left"></i> 使用 Nginx 搭建 HTTPS 正向代理服务
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/09/03/full-gc-troubleshotting/" rel="prev" title="一次频繁 Full GC 问题定位">
+                一次频繁 Full GC 问题定位 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#前提"><span class="nav-number">1.</span> <span class="nav-text">前提</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#What-is-Java-Cipher"><span class="nav-number">2.</span> <span class="nav-text">What is Java Cipher?</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cipher-实例化"><span class="nav-number">2.1.</span> <span class="nav-text">Cipher 实例化</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#转换模式（transformation）的具体含义"><span class="nav-number">3.</span> <span class="nav-text">转换模式（transformation）的具体含义</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#算法-Algorithm"><span class="nav-number">3.1.</span> <span class="nav-text">算法(Algorithm)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#工作模式-Mode"><span class="nav-number">3.2.</span> <span class="nav-text">工作模式(Mode)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#填充模式-Padding"><span class="nav-number">3.3.</span> <span class="nav-text">填充模式(Padding)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cipher-APIs"><span class="nav-number">4.</span> <span class="nav-text">Cipher APIs</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Cipher-的7个属性"><span class="nav-number">4.1.</span> <span class="nav-text">Cipher 的7个属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cipher-一般工作流程"><span class="nav-number">4.2.</span> <span class="nav-text">Cipher 一般工作流程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#创建一个-Cipher-实例"><span class="nav-number">4.2.1.</span> <span class="nav-text">创建一个 Cipher 实例</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cipher-初始化"><span class="nav-number">4.2.2.</span> <span class="nav-text">Cipher 初始化</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#加密和解密数据"><span class="nav-number">4.2.3.</span> <span class="nav-text">加密和解密数据</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cipher-实例重用"><span class="nav-number">4.2.4.</span> <span class="nav-text">Cipher 实例重用</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cipher-包装和解包装密钥"><span class="nav-number">4.2.5.</span> <span class="nav-text">Cipher 包装和解包装密钥</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#总结"><span class="nav-number">5.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">6.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

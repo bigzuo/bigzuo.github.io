@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="NGINX 处理转发请求时报错最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：   1234567891011121314HTTP/1.1 400 Bad RequestServer: o">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Nginx request line 换行导致的 400 异常分析">
+<meta property="og:url" content="http://yoursite.com/2018/08/12/nginx-400-error/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="NGINX 处理转发请求时报错最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：   1234567891011121314HTTP/1.1 400 Bad RequestServer: o">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-09-03T12:40:09.477Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Nginx request line 换行导致的 400 异常分析">
+<meta name="twitter:description" content="NGINX 处理转发请求时报错最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：   1234567891011121314HTTP/1.1 400 Bad RequestServer: o">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/08/12/nginx-400-error/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Nginx request line 换行导致的 400 异常分析 | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/12/nginx-400-error/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">Nginx request line 换行导致的 400 异常分析
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-08-12 04:11:51" itemprop="dateCreated datePublished" datetime="2018-08-12T04:11:51+08:00">2018-08-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/NGINX/" itemprop="url" rel="index"><span itemprop="name">NGINX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/08/12/nginx-400-error/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/08/12/nginx-400-error/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h2 id="NGINX-处理转发请求时报错"><a href="#NGINX-处理转发请求时报错" class="headerlink" title="NGINX 处理转发请求时报错"></a>NGINX 处理转发请求时报错</h2><p>最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 400 Bad Request</span><br><span class="line">Server: openresty/1.11.2.2</span><br><span class="line">Date: Mon, 06 Aug 2018 13:36:20 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 179</span><br><span class="line">Connection: close</span><br><span class="line"> </span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;title&gt;400 Bad Request&lt;/title&gt;&lt;/head&gt;</span><br><span class="line">&lt;body bgcolor=&quot;white&quot;&gt;</span><br><span class="line">&lt;center&gt;&lt;h1&gt;400 Bad Request&lt;/h1&gt;&lt;/center&gt;</span><br><span class="line">&lt;hr&gt;&lt;center&gt;openresty/1.11.2.2&lt;/center&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p>而另外一台 NGINX 的 access 日志中，只显示请求响应 400，error 日志中无其他报错。当我用 postman 或者 <code>curl</code> 命令直接请求这台 NGINX 时，响应一切正常。 <code>curl</code> 命令内容如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">curl --request POST \</span><br><span class="line">  --url http://127.0.0.1:80/root/do/uri \</span><br><span class="line">  --header &apos;beta: 1&apos; \</span><br><span class="line">  --data &apos;param1=aWBIWi7VwmZE0kQqHcyUIZ1wy4I9b99p8wNLiL0IOzYNv5Dz61Pv620shbsolqBCw%252B8S6rNzLywb%250AJ5dBwjPtc6h%252BxJoTuP4h%252Bi6kd5CFx%252BBWQgvjIFDIdbwfb0WpnkBc%252FE3aDQJJbmajLnJM3NHjaw%253D%253D%250A&amp;param1 =4220&apos;</span><br></pre></td></tr></table></figure>
+<p>在将 NGINX 的 error 日志调成 debug 级别后，重新复现问题时，发现 NGINX 在响应400 时，会有一行 info 级别的报错：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2018/08/06 16:15:01 [info] 280#0: *251 client sent invalid request while reading client request line, client: 215.131.75.20, server: ng_instance, request: &quot;POST /uri-path&quot;</span><br></pre></td></tr></table></figure>
+<p>根据报错信息显示 “NGINX 在读取请求行时，发现客户端发起的是一个无效请求”，而又结合直接请求这台 NGINX 时响应正常的现象分析，第一台 NGINX 在转发请求时，发起的请求可能有问题。在第二台 NGINX 上使用 <code>tcpdump</code> 命令抓包分析正常请求和异常请求的内容时，发现被转发的异常请求的 request line 中有换行，除此外无其他任何区别：</p>
+<ul>
+<li>正常请求</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">POST /uri-path HTTP/1.1</span><br><span class="line">User-Agent: curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.3.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2</span><br><span class="line">Host: 215.131.72.4</span><br><span class="line">Accept: */*</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">beta: 1</span><br><span class="line">X-Forwarded-Host: 127.0.0.1</span><br><span class="line">X-Real-IP: 127.0.0.1</span><br><span class="line">X-Forwarded-Server: 127.0.0.1</span><br><span class="line">X-Forwarded-For: 127.0.0.1</span><br><span class="line">Content-Length: 212</span><br></pre></td></tr></table></figure>
+<ul>
+<li>被转发的异常请求</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">POST /uri-path</span><br><span class="line">HTTP/1.1</span><br><span class="line">Host: 127.0.0.1</span><br><span class="line">X-Forwarded-Host: 127.0.0.1</span><br><span class="line">X-Real-IP: 127.0.0.1</span><br><span class="line">X-Forwarded-Server: 127.0.0.1</span><br><span class="line">X-Forwarded-For: 127.0.0.1</span><br><span class="line">Content-Length: 212</span><br><span class="line">User-Agent: curl/7.19.7 (x86_64-redhat-linux-gnu) libcurl/7.19.7 NSS/3.14.3.0 zlib/1.2.3 libidn/1.18 libssh2/1.4.2</span><br><span class="line">Accept: */*</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">beta: 1</span><br></pre></td></tr></table></figure>
+<p>既然只发现这一处差异，那是不是 request line 中有换行导致 NGINX 在处理请求时出现 400 异常呢？</p>
+<h2 id="什么是正确的-request-line-？"><a href="#什么是正确的-request-line-？" class="headerlink" title="什么是正确的 request line ？"></a>什么是正确的 request line ？</h2><p>首先看一下 <a href="https://tools.ietf.org/html/rfc2616#section-5" target="_blank" rel="noopener">RFC 2616</a> 定义的标准 HTTP 请求的格式：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Request       = Request-Line                    </span><br><span class="line">                        *(( general-header      </span><br><span class="line">                         | request-header       </span><br><span class="line">                         | entity-header ) CRLF)</span><br><span class="line">                        CRLF</span><br><span class="line">                        [ message-body ]</span><br></pre></td></tr></table></figure>
+<p>第一行就是 Request-Line，Request-Line 显示了请求的方式、请求资源的位置及使用的 HTTP 协议版本。根据 <a href="https://tools.ietf.org/html/rfc2616#section-5.1" target="_blank" rel="noopener">RFC 2616</a> 文档定义，Request-Line 是由三部分组成：请求方法+Request-URI+HTTP-Version，而且这三部分之间，只能用空格（Space）分开，Request-Line 的最后部分，必须是一个换行符（CRLF）。根据这个定义，异常请求的 request line 中有个换行一定是不合法的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">5.1 Request-Line</span><br><span class="line"></span><br><span class="line">	The Request-Line begins with a method token, followed by the</span><br><span class="line">	Request-URI and the protocol version, and ending with CRLF. The</span><br><span class="line">	elements are separated by SP characters. No CR or LF is allowed</span><br><span class="line">	except in the final CRLF sequence.</span><br><span class="line">	</span><br><span class="line">	    Request-Line   = Method SP Request-URI SP HTTP-Version CRLF</span><br></pre></td></tr></table></figure>
+<h2 id="NGINX-读取-request-line-与-400-异常"><a href="#NGINX-读取-request-line-与-400-异常" class="headerlink" title="NGINX 读取 request line 与 400 异常"></a>NGINX 读取 request line 与 400 异常</h2><p>NGINX 接收到请求后，会对请求进行解析。在 NGINX 实现中，会根据 HTTP 协议规范实现一个有限状态机，NGINX 在解析请求时，会经过这个状态机。在读取 request line 时，NGINX 会记录请求方法、URI 信息及 HTTP 协议信息，以及其他有用的信息放在缓存中，以便后面流程使用。如果请求行处理正常，接着会按照状态机流程处理请求头。但是在处理请求行时，如果客户端提前关闭连接、或者请求行不符合协议规范，读取数据时发生了错误，NGINX 就会立刻终止请求解析，同时给客户端返回一个400错误。当然，如果是客户端提前关闭了连接，400 错误就无法正常到达客户端。因此，被 NGINX 转发的请求，由于 request line 多了一个换行，所以 NGINX 返回了 <code>400 BAD REQUEST</code> 异常。  </p>
+<p>那么，这个换行是怎么来的呢？</p>
+<h2 id="哪里来的换行？"><a href="#哪里来的换行？" class="headerlink" title="哪里来的换行？"></a>哪里来的换行？</h2><p>在我们实现的逻辑中，我们会把需要被 NGINX 转发的接口放到一个配置文件中，当需要增加或减少接口时，直接修改配置文件即可：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/uri-path0#/new-uri-path0</span><br><span class="line">/uri-path1#/new-uri-path1</span><br><span class="line">/uri-path2#/new-uri-path2</span><br><span class="line">/uri-path3#/new-uri-path3</span><br><span class="line">/uri-path4#/new-uri-path4</span><br><span class="line">/uri-path5#/new-uri-path5</span><br><span class="line">/uri-path6#/new-uri-path6</span><br><span class="line">/uri-path7#/new-uri-path7</span><br><span class="line">/uri-path8#/new-uri-path8</span><br><span class="line">/uri-path9#/new-uri-path9</span><br></pre></td></tr></table></figure>
+<p>配置文件中的每一行都有两部分组成：原 URI 和目的 URI，中间用“#”号隔开，且原 URI 和目的 URI 不一样。我们的需求就是如果 NGINX 接收的请求在这个配置文件中，则将请求的URI 替换成目的 URI，然后转发给另外一台 NGINX 处理。  </p>
+<p>我们用 lua 脚本一行行读取这个配置文件，然后解析成原 URI 和目的 URI，存放在共享内存中。刚开始的时候，功能一直正常，请求转发和请求处理都可以正常处理。几天之后，NGINX 在处理转发请求时，开始报 400 异常。同时，我们从日志中也观察到，客户端 NGINX 在进行 URI 替换时， 日志中输出的替换后的 URI会多一个<code>^M</code>符号。为什么之前日志中没有这个符号，现在突然多个这个符号呢？这个符号又是什么意思呢？</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2018/08/06 22:11:28 [debug] 362#362: *1842 [lua] requestRewrite.lua:60: requestRewrite(): rewrite module target uri is /new-uri-path9^M</span><br></pre></td></tr></table></figure>
+<p>其实 Linux/Unix 系统、Mac 系统和 DOS/Windows 系统在处理文本文件时，对换行处理是不一样的。Windows 中的换行符是<code>\r\n</code>，Linux/Unix 下的换行符是<code>\n</code>， Mac 系统是<code>\r</code>。其中<code>\r</code>表示的是回车，<code>\n</code>是换行。因为对换行处理的不一致，导致 Windows 系统的文本文件在 Linux/Unix<br>打开时，每行的结尾会多一个<code>^M</code>符号；而 Linux/Unix 系统的文本文件在 Windows 中打开时，所有行都会变成一行。  </p>
+<p>而导致我们这次问题的原因，就是因为最开始大家在编辑这个配置文件的时候，使用的都是 Mac 电脑，即 Unix 系统。后来，其他同事使用 Windows 电脑编辑这个配置文件，并上传到服务器。lua 脚本在读取配置文件的时候，每一行后面都多个了一个<code>\r</code>，即换行符，因此解析得到的目的 URI，也多了一个换行符。所以，客户端 NGINX 在转发请求的时候，request line 中多了一个换行符，导致目的 NGINX 在解析的时候报错。</p>
+<p>所以，lua 在读取配置文件时，增加对换行的兼容，问题得到解决。</p>
+<h2 id="处理‘-M’-方式"><a href="#处理‘-M’-方式" class="headerlink" title="处理‘^M’ 方式"></a>处理‘^M’ 方式</h2><p>当在 Linux/Unix 系统打开 Windows 的文本文件出现<code>^M</code>符号时，可以很简单通过下面方式解决：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat file | sed &apos;s/^M//&apos; &gt; newfile</span><br></pre></td></tr></table></figure>
+<p>或者：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat file | tr -d &apos;\r&apos; &gt; newfile</span><br></pre></td></tr></table></figure>
+<h2 id="参考文档"><a href="#参考文档" class="headerlink" title="参考文档"></a>参考文档</h2><p><a href="https://stackoverflow.com/questions/18887822/nginx-giving-400-error" target="_blank" rel="noopener">Nginx giving 400 error</a><br><a href="http://tengine.taobao.org/book/chapter_12.html" target="_blank" rel="noopener">nginx的请求处理阶段 (90%)</a><br><a href="http://www.pagefault.info/?p=205" target="_blank" rel="noopener">nginx中http request处理的流程</a><br><a href="http://www.adminschoice.com/how-to-remove-m-in-linux-unix" target="_blank" rel="noopener">How to Remove ^M in Linux &amp; Unix</a><br><a href="https://blog.csdn.net/Blues1021/article/details/39274483" target="_blank" rel="noopener">lua文件读取注意事项</a><br><a href="http://blog.xuite.net/gbisland/linux/26019462-VIM+%E5%B0%8F%E6%8A%80%E5%B7%A7+-+replace+%27%5EM%27" target="_blank" rel="noopener">VIM 小技巧 - replace ‘^M’</a>  </p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/" rel="next" title="NGINX 缓存机制使用不当引发的系统故障">
+                <i class="fa fa-chevron-left"></i> NGINX 缓存机制使用不当引发的系统故障
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2018/11/06/Metrics数据采集异常/" rel="prev" title="Spring Cloud 因 Metrics 采集数据剧增导致CPU负载过高问题排查">
+                Spring Cloud 因 Metrics 采集数据剧增导致CPU负载过高问题排查 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#NGINX-处理转发请求时报错"><span class="nav-number">1.</span> <span class="nav-text">NGINX 处理转发请求时报错</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#什么是正确的-request-line-？"><span class="nav-number">2.</span> <span class="nav-text">什么是正确的 request line ？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#NGINX-读取-request-line-与-400-异常"><span class="nav-number">3.</span> <span class="nav-text">NGINX 读取 request line 与 400 异常</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#哪里来的换行？"><span class="nav-number">4.</span> <span class="nav-text">哪里来的换行？</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#处理‘-M’-方式"><span class="nav-number">5.</span> <span class="nav-text">处理‘^M’ 方式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文档"><span class="nav-number">6.</span> <span class="nav-text">参考文档</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

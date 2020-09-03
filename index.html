@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="Every failure is leading towards success.">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Bigzuo`s Blog">
+<meta property="og:url" content="http://yoursite.com/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="Every failure is leading towards success.">
+<meta property="og:locale" content="zh-Hans">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Bigzuo`s Blog">
+<meta name="twitter:description" content="Every failure is leading towards success.">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left 
+  page-home">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home menu-item-active">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+  <section id="posts" class="posts-expand">
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/03/full-gc-troubleshotting/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2020/09/03/full-gc-troubleshotting/" class="post-title-link" itemprop="url">一次频繁 Full GC 问题定位</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2020-09-03 21:06:47 / Modified: 21:24:41" itemprop="dateCreated datePublished" datetime="2020-09-03T21:06:47+08:00">2020-09-03</time>
+            
+
+            
+              
+
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2020/09/03/full-gc-troubleshotting/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2020/09/03/full-gc-troubleshotting/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
+<h2 id="排查思路"><a href="#排查思路" class="headerlink" title="排查思路"></a>排查思路</h2><h3 id="分析已有-GC-日志"><a href="#分析已有-GC-日志" class="headerlink" title="分析已有 GC 日志"></a>分析已有 GC 日志</h3><p>针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。</p>
+<p>在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的内存空间非常少，或者几乎不回收，找到问题切入点。</p>
+<ul>
+<li>通过分析年轻代回收日志可以得知：老年代对象空间占用为：1398015K(堆整体使用空间) - 69888K(年轻代使用空间)=1328127K，约1297M;</li>
+<li>通过分析老年代<code>CMS Final Remark</code>阶段日志可以得知：老年代对象在 Full GC 后空间占用为：1328127K，约 1297M；和 Full GC 前一样；</li>
+<li>所以频繁 Full GC 的原因是因为老年代对象存活时间长、无法被有效回收，造成每次都空间不够，但是每次 Full GC 又释放不了空间，触发频繁 Full GC 恶性循环；</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4434747</span> secs] <span class="number">1868694</span>K-&gt;<span class="number">1398015</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4438074</span> secs] [Times: user=<span class="number">0</span><span class="variable">.72</span> sys=<span class="number">0</span><span class="variable">.13</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.44</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.132</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.173</span>: [GC (CMS Initial Mark) [<span class="number">1</span> CMS-<span class="keyword">initial</span>-mark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1399079</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.0417353</span> secs] [Times: user=<span class="number">0</span><span class="variable">.08</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.05</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.174</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.215</span>: [CMS-concurrent-mark-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.579</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.620</span>: [CMS-concurrent-mark: <span class="number">1</span><span class="variable">.405</span>/<span class="number">1</span><span class="variable">.405</span> secs] [Times: user=<span class="number">1</span><span class="variable">.94</span> sys=<span class="number">1</span><span class="variable">.66</span>, <span class="keyword">real</span>=<span class="number">1</span><span class="variable">.40</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.621</span>: [CMS-concurrent-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-preclean: <span class="number">0</span><span class="variable">.105</span>/<span class="number">0</span><span class="variable">.107</span> secs] [Times: user=<span class="number">0</span><span class="variable">.16</span> sys=<span class="number">0</span><span class="variable">.14</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.11</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean: <span class="number">0</span><span class="variable">.000</span>/<span class="number">0</span><span class="variable">.000</span> secs] [Times: user=<span class="number">0</span><span class="variable">.00</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [GC (CMS Final Remark) [YG occupancy: <span class="number">402361</span> K (<span class="number">629120</span> K)]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [Rescan (parallel) , <span class="number">0</span><span class="variable">.2188447</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">weak</span> refs processing, <span class="number">0</span><span class="variable">.0004769</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">class</span> unloading, <span class="number">0</span><span class="variable">.1315975</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.040</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.081</span>: [scrub symbol <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0354223</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.075</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.116</span>: [scrub <span class="keyword">string</span> <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0014160</span> secs][<span class="number">1</span> CMS-remark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1730489</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.3881670</span> secs] [Times: user=<span class="number">0</span><span class="variable">.48</span> sys=<span class="number">0</span><span class="variable">.06</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.39</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.077</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.118</span>: [CMS-concurrent-sweep-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4416855</span> secs] <span class="number">1611251</span>K-&gt;<span class="number">1164736</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4419973</span> secs] [Times: user=<span class="number">0</span><span class="variable">.78</span> sys=<span class="number">0</span><span class="variable">.08</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.45</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-sweep: <span class="number">2</span><span class="variable">.049</span>/<span class="number">2</span><span class="variable">.497</span> secs] [Times: user=<span class="number">3</span><span class="variable">.82</span> sys=<span class="number">2</span><span class="variable">.30</span>, <span class="keyword">real</span>=<span class="number">2</span><span class="variable">.50</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-reset-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.621</span>: [CMS-concurrent-reset: <span class="number">0</span><span class="variable">.006</span>/<span class="number">0</span><span class="variable">.006</span> secs] [Times: user=<span class="number">0</span><span class="variable">.03</span> sys=<span class="number">0</span><span class="variable">.03</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2020/09/03/full-gc-troubleshotting/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/03/27/java-cipher-tutorial/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2019/03/27/java-cipher-tutorial/" class="post-title-link" itemprop="url">为什么使用 Java Cipher 要指定转换模式？</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2019-03-27 20:42:33" itemprop="dateCreated datePublished" datetime="2019-03-27T20:42:33+08:00">2019-03-27</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2019/03/27/java-cipher-tutorial/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2019/03/27/java-cipher-tutorial/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] publicDecrypt(PublicKey publicKey, <span class="keyword">byte</span>[] encryptData) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">   <span class="keyword">byte</span>[] output;</span><br><span class="line">   Cipher cipher = Cipher.getInstance(<span class="string">"RSA"</span>);</span><br><span class="line">   cipher.init(Cipher.DECRYPT_MODE, publicKey);</span><br><span class="line">   output = cipher.doFinal(encryptData);</span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/03/27/java-cipher-tutorial/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/12/15/nginx-https-forward-proxy/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/12/15/nginx-https-forward-proxy/" class="post-title-link" itemprop="url">使用 Nginx 搭建 HTTPS 正向代理服务</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-12-15 18:37:49" itemprop="dateCreated datePublished" datetime="2018-12-15T18:37:49+08:00">2018-12-15</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/NGINX-HTTP/" itemprop="url" rel="index"><span itemprop="name">NGINX/HTTP</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/12/15/nginx-https-forward-proxy/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/12/15/nginx-https-forward-proxy/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="NGINX-搭建-HTTP-正向代理"><a href="#NGINX-搭建-HTTP-正向代理" class="headerlink" title="NGINX 搭建 HTTP 正向代理"></a>NGINX 搭建 HTTP 正向代理</h2><p>最近帮同事搭建一个代理服务器，要求当请求的请求头中包含<code>dest_ip</code>时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    if ($http_dest_ip != &quot;&quot;) &#123;</span><br><span class="line">        proxy_pass http://$http_dest_ip/$request_uri;</span><br><span class="line">    &#125;</span><br><span class="line">    proxy_pass https://$http_host$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/12/15/nginx-https-forward-proxy/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/06/Metrics数据采集异常/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/11/06/Metrics数据采集异常/" class="post-title-link" itemprop="url">Spring Cloud 因 Metrics 采集数据剧增导致CPU负载过高问题排查</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-11-06 08:45:23" itemprop="dateCreated datePublished" datetime="2018-11-06T08:45:23+08:00">2018-11-06</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/11/06/Metrics数据采集异常/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/11/06/Metrics数据采集异常/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <p>关键词：GC Overhead Limit Reached、CPU burst、Spring boot metrics</p>
+<p>公司在基于 Spring Cloud 框架的微服务改造过程中，遇到如下问题：当把之前稳定运行在 Spring 3 框架上的业务代码迁移到 Spring Cloud 框架上之后，系统在运行几天后，CPU 的使用率会逐渐增加， GC 频率也会越来越快，最后 CPU 使用率接近100%，GC 每秒钟至少回收超过1G 的新生代对象，系统响应也变的非常慢。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/11/06/Metrics数据采集异常/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/08/12/nginx-400-error/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/08/12/nginx-400-error/" class="post-title-link" itemprop="url">Nginx request line 换行导致的 400 异常分析</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-08-12 04:11:51" itemprop="dateCreated datePublished" datetime="2018-08-12T04:11:51+08:00">2018-08-12</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/NGINX/" itemprop="url" rel="index"><span itemprop="name">NGINX</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/08/12/nginx-400-error/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/08/12/nginx-400-error/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="NGINX-处理转发请求时报错"><a href="#NGINX-处理转发请求时报错" class="headerlink" title="NGINX 处理转发请求时报错"></a>NGINX 处理转发请求时报错</h2><p>最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 400 Bad Request</span><br><span class="line">Server: openresty/1.11.2.2</span><br><span class="line">Date: Mon, 06 Aug 2018 13:36:20 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 179</span><br><span class="line">Connection: close</span><br><span class="line"> </span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;title&gt;400 Bad Request&lt;/title&gt;&lt;/head&gt;</span><br><span class="line">&lt;body bgcolor=&quot;white&quot;&gt;</span><br><span class="line">&lt;center&gt;&lt;h1&gt;400 Bad Request&lt;/h1&gt;&lt;/center&gt;</span><br><span class="line">&lt;hr&gt;&lt;center&gt;openresty/1.11.2.2&lt;/center&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/08/12/nginx-400-error/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/02/26/NGINX缓存机制使用不当引发的系统故障/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/" class="post-title-link" itemprop="url">NGINX 缓存机制使用不当引发的系统故障</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2018-02-26 21:09:33" itemprop="dateCreated datePublished" datetime="2018-02-26T21:09:33+08:00">2018-02-26</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2018/02/26/NGINX缓存机制使用不当引发的系统故障/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/07/16/why-gc-last-so-long/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/07/16/why-gc-last-so-long/" class="post-title-link" itemprop="url">为什么Java GC耗时这么长？</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-07-16 19:31:17" itemprop="dateCreated datePublished" datetime="2017-07-16T19:31:17+08:00">2017-07-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/07/16/why-gc-last-so-long/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/07/16/why-gc-last-so-long/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
+<p>首先我们检查了JVM参数配置，具体参数如下：  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms768M -Xmx768M -XX:MaxNewSize=256m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC -XX:+PrintGCTimeStamps -verbose:gc -Xloggc:logs/gc.log</span><br></pre></td></tr></table></figure>
+<p>我们服务器配置是1核2G，实际可用空间是1.7G，因此结合我们的JVM配置，发现当前配置并无不合理之处。并且测试环境应用请求量并不大，所以也解释不了请求卡顿的原因。<br>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/07/16/why-gc-last-so-long/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </p></div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/31/troubleshooting-long-gc-pauses/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/05/31/troubleshooting-long-gc-pauses/" class="post-title-link" itemprop="url">【翻译】JMV GC 停顿时间过长问题排查</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-05-31 20:18:26" itemprop="dateCreated datePublished" datetime="2017-05-31T20:18:26+08:00">2017-05-31</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/05/31/troubleshooting-long-gc-pauses/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/05/31/troubleshooting-long-gc-pauses/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>原文地址：<a href="https://blogs.oracle.com/poonam/troubleshooting-long-gc-pauses" target="_blank" rel="noopener">Troubleshooting Long GC Pauses</a><br>个人兴趣翻译，能力有限，如有疏漏，请帮忙指正<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">bigzuo.github.io</a>。  </p>
+</blockquote>
+<p>较短的时间停顿是很多企业应用程序运行时最主要的目标，尤其对于一些过长的响应延迟可能会导致事务超时的事务系统。对于运行在JVM上面的一些系统，垃圾回收（GC）有时会造成较长时间的停顿。<br>在本文中，我会介绍几种我们可能会遇到的GC导致长时间停顿的场景，并分析我们应该如何诊断和排查这些问题。<br>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/05/31/troubleshooting-long-gc-pauses/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </p></div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/05/16/dig-into-java-class-loader/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/05/16/dig-into-java-class-loader/" class="post-title-link" itemprop="url">深入理解 Java 类加载器及类加载机制</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-05-16 21:50:55" itemprop="dateCreated datePublished" datetime="2017-05-16T21:50:55+08:00">2017-05-16</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/05/16/dig-into-java-class-loader/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/05/16/dig-into-java-class-loader/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
+<p>什么是SPI？SPI类加载机制？动手实现？</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://tomcat.apache.org/tomcat-8.0-doc/class-loader-howto.html" target="_blank" rel="noopener">Tomcat 8: Class Loader HOW-TO</a><br><a href="https://yq.aliyun.com/articles/2890" target="_blank" rel="noopener">深入浅出ClassLoader（译）</a><br><a href="https://www.zhihu.com/question/38472316/answer/79729218" target="_blank" rel="noopener">java的反射通过类名加载类和ClassLoader通过类名加载类有什么区别？</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/" target="_blank" rel="noopener">深入探讨 Java 类加载器</a><br><a href="http://wiki.metawerx.net/wiki/JARFilesYouShouldNeverIncludeInYourWebapp" target="_blank" rel="noopener">JAR files you should never include in your web-app</a><br><a href="http://shuhucy.iteye.com/blog/1900231" target="_blank" rel="noopener">Tomcat启动时类加载顺序及运行时类载入顺序</a><br><a href="http://wiki.jikexueyuan.com/project/tomcat/classloading.html" target="_blank" rel="noopener">Tomcat 8 类加载机制</a><br><a href="http://www.cnblogs.com/xing901022/p/4574961.html" target="_blank" rel="noopener">图解Tomcat类加载机制</a><br><a href="https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function" target="_blank" rel="noopener">Signature (functions)</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="noopener">How to deal with LinkageErrors in Java?</a><br><a href="http://tcljava.sourceforge.net/docs/TclJava/JavaSignatures.html" target="_blank" rel="noopener">Java Signatures</a><br><a href="http://stackoverflow.com/questions/1993493/error-servlet-jar-not-loaded-offending-class-javax-servlet-servlet-class" target="_blank" rel="noopener">Error: Servlet Jar not Loaded… Offending class: javax/servlet/Servlet.class</a><br><a href="http://blog.csdn.net/yangcheng33/article/details/52631940#reply" target="_blank" rel="noopener">真正理解线程上下文类加载器（多案例分析）</a></p>
+
+          
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/14/distribute-unique-id-renewal/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/04/14/distribute-unique-id-renewal/" class="post-title-link" itemprop="url">Twitter snowflake 分布式ID生成算法的简单改造</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-04-14 20:03:37" itemprop="dateCreated datePublished" datetime="2017-04-14T20:03:37+08:00">2017-04-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/04/14/distribute-unique-id-renewal/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/04/14/distribute-unique-id-renewal/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>项目开发过程中经常会需要生成一个唯一ID，并且由于现在项目应用都是集群部署，所以更多时候还需要保证唯一ID支持分布式。<br>一些情况下，开发人员为了省事，会直接使用时间戳<code>System.currentTimeMillis()</code><br>或者是<strong>UUID</strong>。这两种方式都存在不完善的地方。尤其是采用时间戳，时间戳本质是毫秒数，完全不支持分布式，会存在很高可能导致生成的ID重复。<strong>UUID</strong>虽然本身生成机制可以保证全球唯一，横向扩展性好，但是部分场景下，<strong>UUID</strong>长度可能过长，并且<strong>UUID</strong>是字符串类型，对需要对ID进行排序、对比的场景支持的并不友好，索引效率也很低。<br>鉴于以上原因，我们基于<em>Twitter</em> 开源的分布式ID生成算法<strong>Snowflake</strong>重写了一套分布式ID生成算法，即可以保证分布式唯一，又可以解决采用时间戳或者<strong>UUID</strong>带来的问题。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/04/14/distribute-unique-id-renewal/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+  </section>
+
+  
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
+  </nav>
+
+
+
+          </div>
+          
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+
+      <div class="site-overview-wrap sidebar-panel sidebar-panel-active">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
