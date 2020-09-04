@@ -293,6 +293,200 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/04/14/distribute-unique-id-renewal/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                
+                <a href="/2017/04/14/distribute-unique-id-renewal/" class="post-title-link" itemprop="url">Twitter snowflake 分布式ID生成算法的简单改造</a>
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2017-04-14 20:03:37" itemprop="dateCreated datePublished" datetime="2017-04-14T20:03:37+08:00">2017-04-14</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/算法/" itemprop="url" rel="index"><span itemprop="name">算法</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2017/04/14/distribute-unique-id-renewal/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2017/04/14/distribute-unique-id-renewal/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>项目开发过程中经常会需要生成一个唯一ID，并且由于现在项目应用都是集群部署，所以更多时候还需要保证唯一ID支持分布式。<br>一些情况下，开发人员为了省事，会直接使用时间戳<code>System.currentTimeMillis()</code><br>或者是<strong>UUID</strong>。这两种方式都存在不完善的地方。尤其是采用时间戳，时间戳本质是毫秒数，完全不支持分布式，会存在很高可能导致生成的ID重复。<strong>UUID</strong>虽然本身生成机制可以保证全球唯一，横向扩展性好，但是部分场景下，<strong>UUID</strong>长度可能过长，并且<strong>UUID</strong>是字符串类型，对需要对ID进行排序、对比的场景支持的并不友好，索引效率也很低。<br>鉴于以上原因，我们基于<em>Twitter</em> 开源的分布式ID生成算法<strong>Snowflake</strong>重写了一套分布式ID生成算法，即可以保证分布式唯一，又可以解决采用时间戳或者<strong>UUID</strong>带来的问题。</p>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2017/04/14/distribute-unique-id-renewal/#more" rel="contents">
+                Read more &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2017/03/31/java-int-41-error/">
 
     <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
@@ -1317,7 +1511,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
                 
                   <a href="/archives/">
                 
-                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-count">16</span>
                     <span class="site-state-item-name">posts</span>
                   </a>
                 </div>
@@ -1340,7 +1534,9 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
                     
                       
                     
-                    <span class="site-state-item-count">5</span>
+                      
+                    
+                    <span class="site-state-item-count">6</span>
                     <span class="site-state-item-name">categories</span>
                   
                 </div>
