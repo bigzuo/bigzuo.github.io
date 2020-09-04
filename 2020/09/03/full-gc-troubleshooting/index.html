@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<html class="theme-next muse use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.8.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2">
+
+<link rel="stylesheet" href="/css/main.css?v=6.7.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=6.7.0">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=6.7.0">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=6.7.0" color="#222">
+
+
+
+
+
+
+
+<script id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '6.7.0',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: false,
+    fastclick: false,
+    lazyload: false,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+  
+
+
+
+
+  <meta name="description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
+<meta property="og:type" content="article">
+<meta property="og:title" content="一次频繁 Full GC 问题定位">
+<meta property="og:url" content="http://yoursite.com/2020/09/03/full-gc-troubleshooting/index.html">
+<meta property="og:site_name" content="Bigzuo`s Blog">
+<meta property="og:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="https://bigzuo.github.io/images/object-overwiew.png">
+<meta property="og:image" content="https://bigzuo.github.io/images/largest-object.png">
+<meta property="og:image" content="https://bigzuo.github.io/images/object-reference.png">
+<meta property="og:updated_time" content="2020-09-04T01:52:37.390Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="一次频繁 Full GC 问题定位">
+<meta name="twitter:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta name="twitter:image" content="https://bigzuo.github.io/images/object-overwiew.png">
+
+
+
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2020/09/03/full-gc-troubleshooting/">
+
+
+
+<script id="page.configurations">
+  CONFIG.page = {
+    sidebar: "",
+  };
+</script>
+
+  <title>一次频繁 Full GC 问题定位 | Bigzuo`s Blog</title>
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .motion-element,
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-title { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope="" itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope="" itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Bigzuo`s Blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+    
+      
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+      
+    
+    
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  
+    <ul id="menu" class="menu">
+      
+        
+        
+        
+          
+          <li class="menu-item menu-item-home">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+        
+        
+        
+          
+          <li class="menu-item menu-item-archives">
+
+    
+    
+    
+      
+    
+
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+
+      
+      
+    </ul>
+  
+
+  
+    
+
+  
+
+  
+</nav>
+
+
+
+  
+
+
+
+</div>
+    </header>
+
+    
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  
+
+  <article class="post post-type-normal" itemscope="" itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/09/03/full-gc-troubleshooting/">
+
+    <span hidden itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zuoforward@gmail.com">
+      <meta itemprop="description" content="Every failure is leading towards success.">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope="" itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Bigzuo`s Blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">一次频繁 Full GC 问题定位
+
+              
+            
+          </h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+
+            
+            
+            
+
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+
+              
+                
+              
+
+              <time title="Created: 2020-09-03 21:06:47" itemprop="dateCreated datePublished" datetime="2020-09-03T21:06:47+08:00">2020-09-03</time>
+            
+
+            
+              
+
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-04 09:52:37" itemprop="dateModified" datetime="2020-09-04T09:52:37+08:00">2020-09-04</time>
+              
+            
+          </span>
+
+          
+            <span class="post-category">
+            
+              <span class="post-meta-divider">|</span>
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">In</span>
+              
+              
+                <span itemprop="about" itemscope="" itemtype="http://schema.org/Thing"><a href="/categories/Java-JVM/" itemprop="url" rel="index"><span itemprop="name">Java/JVM</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+            
+            
+              
+              <span class="post-comments-count">
+                <span class="post-meta-divider">|</span>
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-comment-o"></i>
+                </span>
+            
+                <a href="/2020/09/03/full-gc-troubleshooting/#comments" itemprop="discussionUrl">
+                  <span class="post-meta-item-text">Comments: </span> <span class="post-comments-count valine-comment-count" data-xid="/2020/09/03/full-gc-troubleshooting/" itemprop="commentCount"></span>
+                </a>
+              </span>
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>关键词：Full GC、Stop the world、request delay</p>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
+<h2 id="排查思路"><a href="#排查思路" class="headerlink" title="排查思路"></a>排查思路</h2><h3 id="分析已有-GC-日志"><a href="#分析已有-GC-日志" class="headerlink" title="分析已有 GC 日志"></a>分析已有 GC 日志</h3><p>针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。</p>
+<p>在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的内存空间非常少，或者几乎不回收，找到问题切入点。</p>
+<ul>
+<li><p>通过分析年轻代回收日志可以得知：老年代对象空间占用为：1398015K(堆整体使用空间) - 69888K(年轻代使用空间)=1328127K，约1297M;</p>
+</li>
+<li><p>通过分析老年代<code>CMS Final Remark</code>阶段日志可以得知：老年代对象在 Full GC 后空间占用为：1328127K，约 1297M；和 Full GC 前一样；</p>
+</li>
+<li><p>所以频繁 Full GC 的原因是因为老年代对象存活时间长、无法被有效回收，造成每次都空间不够，但是每次 Full GC 又释放不了空间，触发频繁 Full GC 恶性循环；</p>
+<a id="more"></a>
+</li>
+</ul>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4434747</span> secs] <span class="number">1868694</span>K-&gt;<span class="number">1398015</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4438074</span> secs] [Times: user=<span class="number">0</span><span class="variable">.72</span> sys=<span class="number">0</span><span class="variable">.13</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.44</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.132</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.173</span>: [GC (CMS Initial Mark) [<span class="number">1</span> CMS-<span class="keyword">initial</span>-mark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1399079</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.0417353</span> secs] [Times: user=<span class="number">0</span><span class="variable">.08</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.05</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.174</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.215</span>: [CMS-concurrent-mark-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.579</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.620</span>: [CMS-concurrent-mark: <span class="number">1</span><span class="variable">.405</span>/<span class="number">1</span><span class="variable">.405</span> secs] [Times: user=<span class="number">1</span><span class="variable">.94</span> sys=<span class="number">1</span><span class="variable">.66</span>, <span class="keyword">real</span>=<span class="number">1</span><span class="variable">.40</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.621</span>: [CMS-concurrent-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-preclean: <span class="number">0</span><span class="variable">.105</span>/<span class="number">0</span><span class="variable">.107</span> secs] [Times: user=<span class="number">0</span><span class="variable">.16</span> sys=<span class="number">0</span><span class="variable">.14</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.11</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean: <span class="number">0</span><span class="variable">.000</span>/<span class="number">0</span><span class="variable">.000</span> secs] [Times: user=<span class="number">0</span><span class="variable">.00</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [GC (CMS Final Remark) [YG occupancy: <span class="number">402361</span> K (<span class="number">629120</span> K)]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [Rescan (parallel) , <span class="number">0</span><span class="variable">.2188447</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">weak</span> refs processing, <span class="number">0</span><span class="variable">.0004769</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">class</span> unloading, <span class="number">0</span><span class="variable">.1315975</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.040</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.081</span>: [scrub symbol <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0354223</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.075</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.116</span>: [scrub <span class="keyword">string</span> <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0014160</span> secs][<span class="number">1</span> CMS-remark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1730489</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.3881670</span> secs] [Times: user=<span class="number">0</span><span class="variable">.48</span> sys=<span class="number">0</span><span class="variable">.06</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.39</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.077</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.118</span>: [CMS-concurrent-sweep-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4416855</span> secs] <span class="number">1611251</span>K-&gt;<span class="number">1164736</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4419973</span> secs] [Times: user=<span class="number">0</span><span class="variable">.78</span> sys=<span class="number">0</span><span class="variable">.08</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.45</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-sweep: <span class="number">2</span><span class="variable">.049</span>/<span class="number">2</span><span class="variable">.497</span> secs] [Times: user=<span class="number">3</span><span class="variable">.82</span> sys=<span class="number">2</span><span class="variable">.30</span>, <span class="keyword">real</span>=<span class="number">2</span><span class="variable">.50</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-reset-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.621</span>: [CMS-concurrent-reset: <span class="number">0</span><span class="variable">.006</span>/<span class="number">0</span><span class="variable">.006</span> secs] [Times: user=<span class="number">0</span><span class="variable">.03</span> sys=<span class="number">0</span><span class="variable">.03</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br></pre></td></tr></table></figure>
+<h3 id="复现问题验证猜测"><a href="#复现问题验证猜测" class="headerlink" title="复现问题验证猜测"></a>复现问题验证猜测</h3><p>单次通过 GC 日志分析的结论可能具有偶然性，不一定能精确定位问题。所以为了验证猜测，我们使用<code>jstat</code>命令实时查看 JVM 的垃圾回收状态，看看是否每次 Full GC 的现象和刚才分析的一致。</p>
+<p>我们在相同的环境，重新模拟了批量消息发送的场景。在消息发送期间，通过<code>jstat</code>命令发现，每次 Full GC 几乎都不能有效回收内存空间。如下显示：</p>
+<blockquote>
+<p>在 16s 之内，应用触发了 7 次  Full GC ，但是老年代的空间占用率一直在 95.5%左右，基本上没有波动，说明问题原因在于老年代里面的对象无法被回收掉，和猜测一致。</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[root@DockerHost applogs]# /wls/jdk1.8.0_131/bin/jstat -gcutil $pid 1000</span><br><span class="line">  S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00   0.00 100.00  95.62  95.12  93.27     64   11.339    37   75.734   87.073</span><br><span class="line">  0.00   0.00  38.92  95.58  95.13  93.29     64   11.339    38   79.567   90.906</span><br><span class="line">  0.00   0.00 100.00  95.58  95.13  93.29     65   11.339    39   79.567   90.906</span><br><span class="line">  0.00   0.00 100.00  95.58  95.13  93.29     65   11.339    39   79.567   90.906</span><br><span class="line">  0.00   0.00 100.00  95.58  95.13  93.29     65   11.339    39   79.567   90.906</span><br><span class="line">  0.00   0.00 100.00  95.58  95.13  93.29     65   11.339    39   79.567   90.906</span><br><span class="line">  0.00   0.00 100.00  96.21  95.13  93.29     66   11.339    40   83.536   94.875</span><br><span class="line">  0.00   0.00 100.00  96.21  95.13  93.29     66   11.339    40   83.536   94.875</span><br><span class="line">  0.00   0.00 100.00  96.21  95.13  93.29     66   11.339    40   83.536   94.875</span><br><span class="line">  0.00   0.00  59.73  95.35  95.13  93.29     66   11.339    41   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.35  95.13  93.29     67   11.339    42   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.35  95.13  93.29     67   11.339    42   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.35  95.13  93.29     67   11.339    42   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.35  95.13  93.29     67   11.339    42   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.35  95.13  93.29     67   11.339    42   86.946   98.285</span><br><span class="line">  0.00   0.00 100.00  95.63  95.13  93.29     68   11.339    43   91.892  103.231</span><br></pre></td></tr></table></figure>
+<p>既然是内存无法回收引起的问题，那就 Dump 出内存堆栈，找出是哪些对象回收不掉、为什么回收不掉。</p>
+<h3 id="内存堆栈分析"><a href="#内存堆栈分析" class="headerlink" title="内存堆栈分析"></a>内存堆栈分析</h3><p>使用 <code>jmap</code> 命令 Dump 内存堆栈：</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[root@DockerHost applogs]# /wls/jdk1.8.0_131/bin/jmap -dump:format=b,file=heapInfo.hprof $pid</span><br></pre></td></tr></table></figure>
+<p>下载 dump 文件，使用 JDK 自带工具 <code>visualvm</code>  分析内存堆栈：</p>
+<ul>
+<li>找到内存占用最大的对象类型。如图可见，<code>char[]</code> 是内存中占用空间最大的对象类型，共计有 496M，占用了 22.1% 的堆空间。</li>
+</ul>
+<p><img src="https://bigzuo.github.io/images/object-overwiew.png" alt="object-overwiew"></p>
+<ul>
+<li>在内存占用最大的对象类型中查找可疑对象。一般情况下，可疑对象很多，有可能需要输出多次内存堆栈、多次查找对比，才能定位问题对象。根据经验，一般出现大量相同对象，很有可能就是我们要找的问题对象。</li>
+</ul>
+<p>分析内存对象时，发现如下大量相同对象，且每个对象为 35k，明显属于超大对象，正常业务对象一般较小；很有可能它就是本次问题的元凶。</p>
+<p><img src="https://bigzuo.github.io/images/largest-object.png" alt="largest-object"></p>
+<ul>
+<li>利用  <code>visualvm</code> 深入分析该对象的内容。通过对象的引用关系，发现这个对象和公司内部的一个监控埋点数据收集系统的 SDK 有关。</li>
+</ul>
+<p><img src="https://bigzuo.github.io/images/object-reference.png" alt="object-reference"></p>
+<h3 id="从问题对象找到问题代码"><a href="#从问题对象找到问题代码" class="headerlink" title="从问题对象找到问题代码"></a>从问题对象找到问题代码</h3><p>根据引用关系查找问题代码。通过排查代码，发现如下可疑操作：长连接推送系统为了记录会话状态、用户在线信息等数据，会将相关数据暂存到 <code>LinkedBlockingQueue</code> 队列中，然后再异步发送到监控采集系统的 kafka 集群。<code>LinkedBlockingQueue</code>长度默认是 1w, 测试环境实际配置是 50w. 根据内存堆栈显示，一个相关对象为 35k, <code>LinkedBlockingQueue</code>存储1w 个这种对象，就会占用约 350M 内存。这些内容如果不能被及时消费，会一直存在于内存，无法被 GC 回收掉，进而会触发频繁 <code>full gc</code>，理论分析和实际 GC 现象一致。</p>
+<p>问题代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue 长度默认是 <span class="number">1</span>w，测试环境实际配置 <span class="number">50</span>w.<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">traceSession</span><span class="params">(SocketUser socketUser, Date connectTime, Response response,<span class="keyword">long</span> middleTime1, <span class="keyword">long</span> middleTime2)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  ***</span></span><br><span class="line"><span class="comment">  **/</span></span><br><span class="line">  BaseKeepAliveInfo aliveInfo = <span class="keyword">new</span> BaseKeepAliveInfo();</span><br><span class="line">  aliveInfo.setType(metric.getType().getCode());</span><br><span class="line"></span><br><span class="line">  Map&lt;String, Object&gt; info = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">  info.put(TraceConstants.Field.SESSION_ID.getCode(), socketUser.getSid());</span><br><span class="line">  info.put(TraceConstants.Field.DEVICE_ID.getCode(), socketUser.getDeviceId());</span><br><span class="line">  info.put(TraceConstants.Field.UID.getCode(), socketUser.getUid());</span><br><span class="line">  <span class="comment">// 省略无关代码</span></span><br><span class="line">  info.put(TraceConstants.Field.DISCONNECT_TIME.getCode(), disconnectTime);</span><br><span class="line">  info.put(TraceConstants.Field.CONNECT_COST.getCode(), disconnectTime - connectTime.getTime());</span><br><span class="line">  info.put(TraceConstants.Field.APPID.getCode(), socketUser.getAppId());</span><br><span class="line"></span><br><span class="line">  Map&lt;String, Object&gt; extra = TraceUtil.getExtra(response, socketUser);</span><br><span class="line">  extra.put(<span class="string">"middleTime1"</span>,middleTime1);</span><br><span class="line">  extra.put(<span class="string">"middleTime2"</span>,middleTime2);</span><br><span class="line"></span><br><span class="line">  info.put(TraceConstants.Field.EXTRA.getCode(), extra);</span><br><span class="line"></span><br><span class="line">  aliveInfo.setInfo(info);</span><br><span class="line">  getUploadQueue().add(aliveInfo); <span class="comment">// 问题代码入口</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> BlockingQueue&lt;BaseKeepAliveInfo&gt; <span class="title">getUploadQueue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> uploadQueue;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> BlockingQueue&lt;BaseKeepAliveInfo&gt; uploadQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;(TraceUtil.getIntConfig(<span class="number">10000</span>); <span class="comment">//BlockingQueue 长度默认是 1w，测试环境实际配置 50w.</span></span><br></pre></td></tr></table></figure>
+<p>结合 Full gc 期间的应用日志，发现应用日志也在频繁报相关异常：<strong><em><code>LinkedBlockingQueue</code> 队列已满，无法继续添加</em></strong>。这个日志也侧面证明，<code>LinkedBlockingQueue</code>关联的对象都还一直在内存中，导致内存无法被有效回收。</p>
+<figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">13</span> <span class="number">17</span>:<span class="number">15</span>:<span class="number">05</span><span class="variable">.387</span> ERROR <span class="number">462</span> --- [nioEventLoopGroup-<span class="number">3</span>-<span class="number">66</span>] c<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.trace</span><span class="variable">.TraceService</span>  : Metric SEND_MESSAGE Event TEMP_GROUP_MSG Trace Error &#123;&#125;</span><br><span class="line">java<span class="variable">.lang</span><span class="variable">.IllegalStateException</span>: Queue full</span><br><span class="line">        at java<span class="variable">.util</span><span class="variable">.AbstractQueue</span><span class="variable">.add</span>(AbstractQueue<span class="variable">.java</span>:<span class="number">98</span>)</span><br><span class="line">        at com<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.trace</span><span class="variable">.TraceService</span><span class="variable">.traceSendMessage</span>(TraceService<span class="variable">.java</span>:<span class="number">248</span>)</span><br><span class="line">        at com<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.trace</span><span class="variable">.TraceService</span><span class="variable">.traceCallback</span>(TraceService<span class="variable">.java</span>:<span class="number">118</span>)</span><br><span class="line">        at com<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.trace</span><span class="variable">.TraceService</span><span class="variable">.traceSuccess</span>(TraceService<span class="variable">.java</span>:<span class="number">59</span>)</span><br><span class="line">        at com<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.ackCallback</span><span class="variable">.TempGroupMsgAckCallback</span><span class="variable">.onSuccess</span>(TempGroupMsgAckCallback<span class="variable">.java</span>:<span class="number">47</span>)</span><br><span class="line">        at com<span class="variable">.paic</span><span class="variable">.smp</span><span class="variable">.conn</span><span class="variable">.pool</span><span class="variable">.ackCallback</span><span class="variable">.TempGroupMsgAckCallback</span><span class="variable">.onSuccess</span>(TempGroupMsgAckCallback<span class="variable">.java</span>:<span class="number">12</span>)</span><br><span class="line">        at com<span class="variable">.corundumstudio</span><span class="variable">.socketio</span><span class="variable">.ack</span><span class="variable">.AckManager</span><span class="variable">.onAck</span>(AckManager<span class="variable">.java</span>:<span class="number">116</span>)</span><br><span class="line">        at com<span class="variable">.corundumstudio</span><span class="variable">.socketio</span><span class="variable">.handler</span><span class="variable">.PacketListener</span><span class="variable">.onPacket</span>(PacketListener<span class="variable">.java</span>:<span class="number">96</span>)</span><br><span class="line">        at com<span class="variable">.corundumstudio</span><span class="variable">.socketio</span><span class="variable">.handler</span><span class="variable">.InPacketHandler</span><span class="variable">.channelRead0</span>(InPacketHandler<span class="variable">.java</span>:<span class="number">92</span>)</span><br><span class="line">        at com<span class="variable">.corundumstudio</span><span class="variable">.socketio</span><span class="variable">.handler</span><span class="variable">.InPacketHandler</span><span class="variable">.channelRead0</span>(InPacketHandler<span class="variable">.java</span>:<span class="number">36</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.channel</span><span class="variable">.SimpleChannelInboundHandler</span><span class="variable">.channelRead</span>(SimpleChannelInboundHandler<span class="variable">.java</span>:<span class="number">99</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.channel</span><span class="variable">.AbstractChannelHandlerContext</span><span class="variable">.invokeChannelRead</span>(AbstractChannelHandlerContext<span class="variable">.java</span>:<span class="number">374</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.channel</span><span class="variable">.AbstractChannelHandlerContext</span><span class="variable">.invokeChannelRead</span>(AbstractChannelHandlerContext<span class="variable">.java</span>:<span class="number">360</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.channel</span><span class="variable">.AbstractChannelHandlerContext</span><span class="variable">.fireChannelRead</span>(AbstractChannelHandlerContext<span class="variable">.java</span>:<span class="number">352</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.handler</span><span class="variable">.codec</span><span class="variable">.ByteToMessageDecoder</span><span class="variable">.channelRead</span>(ByteToMessageDecoder<span class="variable">.java</span>:<span class="number">304</span>)</span><br><span class="line">        at io<span class="variable">.netty</span><span class="variable">.channel</span><span class="variable">.AbstractChannelHandlerContext</span><span class="variable">.invokeChannelRead</span>(AbstractChannelHandlerContext<span class="variable">.java</span>:<span class="number">374</span>)</span><br><span class="line">	<span class="comment">// 省略相关日志</span></span><br></pre></td></tr></table></figure>
+<p>至此，基本可以确定频繁 Full GC 的问题和这段代码有关。</p>
+<h3 id="临时验证方案"><a href="#临时验证方案" class="headerlink" title="临时验证方案"></a>临时验证方案</h3><p>找到原因后，通过把<code>LinkedBlockingQueue</code> 队列长度调小、或者关闭相关功能，都应该可以避免问题再次出现，并验证猜测是否合理。因此，我们针对如下两个场景做了相关验证，发现问题再未出现，GC 也恢复正常，Full GC 很少出现，并且每次 Full GC 时都能够有效回收资源。</p>
+<ul>
+<li>把<code>LinkedBlockingQueue</code> 队列长度调小（由 1w 改成 100）</li>
+<li>关闭<code>LinkedBlockingQueue</code> 采集功能</li>
+</ul>
+<h2 id="定位结论"><a href="#定位结论" class="headerlink" title="定位结论"></a>定位结论</h2><ul>
+<li>长连接组件为了统计在线用户信息、发送状态等数据，应用中使用了一个<code>LinkedBlockingQueue</code>队列暂存相关数据，然后再异步发送到监控采集系统的 kafka 集群；</li>
+<li><code>LinkedBlockingQueue</code>队列长度默认是 1w, 测试环境实际配置是 50w。队列保存的对象每个大小约为 35k，假如存储 1w 个类似对象，所需内存约为 350M；</li>
+<li>在进行大量消息发送时，<code>LinkedBlockingQueue</code>队列中对象积压，又因为队列长度配置过大，导致大量对象驻留在内存中，导致内存空间不足，触发 Full GC。</li>
+<li>因队列长度过大、对象在队列中存活时间较长，所以每次 Full GC 都无法有效 GC 并释放空间，进而导致更加频繁 Full GC。频繁 Full GC 又触发系统停顿增加、资源消耗增多，因此导致性能下降；</li>
+</ul>
+<h2 id="优化建议"><a href="#优化建议" class="headerlink" title="优化建议"></a>优化建议</h2><p>根据一般 Metric 数据收集策略，我觉得可以从如下两个方向优化，但是由于不太了解长连接平台的具体实现细节，具体优化方案可能需要具体分析。</p>
+<ul>
+<li>客户端聚合：在线用户状态、会话数据等信息一般只关注最终统计值，实际每个 Metric 的数据明细可能并不重要，所以采集的 Metric 数据可以按批在客户端聚合，只将聚合后信息发送到 Kafka 集群，这样可以大幅减少待发送数据、提高信息发送效率；</li>
+<li>控制采样率：大部分场景并不要求采集数据 100% 准确，所以可以通过控制采样率，减少源头数据的采集，来减少数据的存储、发送的资源消耗，同时提高效率；</li>
+</ul>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://www.cnblogs.com/zhangxiaoguang/p/5792468.html" target="_blank" rel="noopener">GC之详解CMS收集过程和日志分析</a></p>
+<p><a href="https://plumbr.io/handbook/garbage-collection-algorithms-implementations#concurrent-mark-and-sweep" target="_blank" rel="noopener">GC Algorithms: Implementations</a></p>
+<p><a href="https://blog.csdn.net/GitChat/article/details/79019454" target="_blank" rel="noopener">Java 线上问题排查思路与工具使用</a></p>
+<p><a href="https://developer.ibm.com/zh/articles/j-lo-performance-tuning-practice/" target="_blank" rel="noopener">Java 应用性能调优实践</a></p>
+
+      
+    </div>
+
+    
+
+    
+    
+    
+
+    
+
+    
+      
+    
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2019/03/27/java-cipher-tutorial/" rel="next" title="为什么使用 Java Cipher 要指定转换模式？">
+                <i class="fa fa-chevron-left"></i> 为什么使用 Java Cipher 要指定转换模式？
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+  </div>
+
+
+          </div>
+          
+
+  
+    <div class="comments" id="comments">
+    </div>
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope="" itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">zuoforward@gmail.com</p>
+              <p class="site-description motion-element" itemprop="description">Every failure is leading towards success.</p>
+          </div>
+
+          
+            <nav class="site-state motion-element">
+              
+                <div class="site-state-item site-state-posts">
+                
+                  <a href="/archives/">
+                
+                    <span class="site-state-item-count">15</span>
+                    <span class="site-state-item-name">posts</span>
+                  </a>
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-categories">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">5</span>
+                    <span class="site-state-item-name">categories</span>
+                  
+                </div>
+              
+
+              
+                
+                
+                <div class="site-state-item site-state-tags">
+                  
+                    
+                    
+                      
+                    
+                      
+                    
+                      
+                    
+                    <span class="site-state-item-count">3</span>
+                    <span class="site-state-item-name">tags</span>
+                  
+                </div>
+              
+            </nav>
+          
+
+          
+
+          
+
+          
+
+          
+          
+
+          
+            
+          
+          
+
+        </div>
+      </div>
+
+      
+      <!--noindex-->
+        <div class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+            
+            
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#背景介绍"><span class="nav-number">1.</span> <span class="nav-text">背景介绍</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#排查思路"><span class="nav-number">2.</span> <span class="nav-text">排查思路</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#分析已有-GC-日志"><span class="nav-number">2.1.</span> <span class="nav-text">分析已有 GC 日志</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#复现问题验证猜测"><span class="nav-number">2.2.</span> <span class="nav-text">复现问题验证猜测</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#内存堆栈分析"><span class="nav-number">2.3.</span> <span class="nav-text">内存堆栈分析</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#从问题对象找到问题代码"><span class="nav-number">2.4.</span> <span class="nav-text">从问题对象找到问题代码</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#临时验证方案"><span class="nav-number">2.5.</span> <span class="nav-text">临时验证方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#定位结论"><span class="nav-number">3.</span> <span class="nav-text">定位结论</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#优化建议"><span class="nav-number">4.</span> <span class="nav-text">优化建议</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考资料"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </div>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zuoforward@gmail.com</span>
+
+  
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.8.0</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v6.7.0</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+    
+
+    
+  </div>
+
+  
+
+<script>
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+
+  
+
+
+  <script src="/js/src/utils.js?v=6.7.0"></script>
+
+  <script src="/js/src/motion.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+
+  <script src="/js/src/schemes/muse.js?v=6.7.0"></script>
+
+
+
+  
+  <script src="/js/src/scrollspy.js?v=6.7.0"></script>
+<script src="/js/src/post-details.js?v=6.7.0"></script>
+
+
+
+  
+
+
+  <script src="/js/src/bootstrap.js?v=6.7.0"></script>
+
+
+
+  
+  
+
+<script src="//cdn1.lncld.net/static/js/3.11.1/av-min.js"></script>
+
+
+
+<script src="//unpkg.com/valine/dist/Valine.min.js"></script>
+
+<script>
+  var GUEST = ['nick', 'mail', 'link'];
+  var guest = 'nick,mail';
+  guest = guest.split(',').filter(function(item) {
+    return GUEST.indexOf(item) > -1;
+  });
+  new Valine({
+    el: '#comments',
+    verify: true,
+    notify: true,
+    appId: '9D9IxFiKn2H4VAyDWnJvfKri-gzGzoHsz',
+    appKey: 'aJL7TBnulr40orlDGBWwB5b0',
+    placeholder: 'Comment here...',
+    avatar: 'mm',
+    meta: guest,
+    pageSize: '10' || 10,
+    visitor: false
+  });
+</script>
+
+
+
+
+  
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
