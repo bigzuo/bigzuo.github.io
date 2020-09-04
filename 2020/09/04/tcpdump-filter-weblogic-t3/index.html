@@ -109,7 +109,7 @@
 <meta property="og:image" content="https://bigzuo.github.io/images/t3-tcp.png">
 <meta property="og:image" content="https://bigzuo.github.io/images/t3-tcpdump-detail.png">
 <meta property="og:image" content="https://bigzuo.github.io/images/find-t3.png">
-<meta property="og:updated_time" content="2020-09-04T02:07:32.546Z">
+<meta property="og:updated_time" content="2020-09-04T02:09:10.685Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="通过 tcpdump 过滤识别 weblogic t3 请求">
 <meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  关键词：tcpdump、tcpdump filter、TCP、weblogic t3 背景介绍在我们的项目中，我们系统被很多外部系统依赖，我们会提供一些接口给外部系统调用。近期发现我们提供给外部系统的接口可能暴露了一些不该暴露的敏感信息给外部系统，造成了较大的安全隐患。所以我们接到了一个梳理所有对外提供的接口清">
@@ -342,7 +342,7 @@
                 
               
 
-              <time title="Created: 2020-09-04 16:37:35 / Modified: 10:07:32" itemprop="dateCreated datePublished" datetime="2020-09-04T16:37:35+08:00">2020-09-04</time>
+              <time title="Created: 2020-09-04 16:37:35 / Modified: 10:09:10" itemprop="dateCreated datePublished" datetime="2020-09-04T16:37:35+08:00">2020-09-04</time>
             
 
             
@@ -418,6 +418,7 @@
 <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>在我们的项目中，我们系统被很多外部系统依赖，我们会提供一些接口给外部系统调用。近期发现我们提供给外部系统的接口可能暴露了一些不该暴露的敏感信息给外部系统，造成了较大的安全隐患。所以我们接到了一个梳理所有对外提供的接口清单的任务。</p>
 <p>针对 API 接口，我们主要提供的服务有两大类：HTTP 服务和基于 t3 协议的 EJB 服务，EJB 服务主要存在于内部有一些超过 10 年的老系统。HTTP 服务我们有对应成熟的链路监控，可以很容易梳理接口清单。但是因 EJB 服务在我们公司比较边缘，只存在于部分很老的系统，所有的安全监控、运维监控、网络监控、调用链等平台都未覆盖 EJB 服务，所以通用的请求梳理手段都无法满足需求。</p>
 <p>在我们公司，提供了 EJB 服务的系统，同时也会提供 HTTP 服务，且两个服务的端口是同一个，所以无法从网络连接排查 EJB 服务。经过理论分析，如果从基础网络协议出发，只要能在网络应用层协议识别出 EJB 请求（EJB 服务底层使用 t3 协议，和 HTTP 一样，都是应用层协议），那就能找到请求方信息，进而梳理出EJB服务的请求链路。在没有更好方式的情况下，抱着死马当活马医的心态，我们进行了反复的测试和验证，最终验证该方案可行。</p>
+<a id="more"></a>
 <h2 id="分析步骤"><a href="#分析步骤" class="headerlink" title="分析步骤"></a>分析步骤</h2><h3 id="HTTP-协议请求分析"><a href="#HTTP-协议请求分析" class="headerlink" title="HTTP 协议请求分析"></a>HTTP 协议请求分析</h3><p>如下为一次典型的 HTTP 1.0 协议请求过程，蓝色部分为 TCP 协议层的三次握手。红色部分为 TCP 协议三次握手后应用发起的第一次 HTTP 请求，请求的协议为 HTTP，内容为 <code>GET /f5monweb/f5check.jsp HTTP/1.0</code></p>
 <p><img src="https://bigzuo.github.io/images/http-request.png" alt="http-request"></p>
 <p>本次完整的 HTTP 请求内容如下：</p>
