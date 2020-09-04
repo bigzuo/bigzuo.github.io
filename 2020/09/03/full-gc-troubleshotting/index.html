@@ -96,22 +96,22 @@
 
 
 
-  <meta name="description" content="背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。 在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的">
-<meta name="keywords" content="JAVA&#x2F;JVM">
+  <meta name="description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta name="keywords" content="Java&#x2F;JVM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一次频繁 Full GC 问题定位">
 <meta property="og:url" content="http://yoursite.com/2020/09/03/full-gc-troubleshotting/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。 在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的">
+<meta property="og:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="http://yoursite.com/2020/09/03/full-gc-troubleshotting/images/object-overwiew.png">
-<meta property="og:image" content="http://yoursite.com/images/largest-object.png">
-<meta property="og:image" content="http://yoursite.com/2020/09/03/full-gc-troubleshotting/images/object-reference.png">
-<meta property="og:updated_time" content="2020-09-03T13:29:07.913Z">
+<meta property="og:image" content="https://bigzuo.github.io/images/object-overwiew.png">
+<meta property="og:image" content="https://bigzuo.github.io/images/largest-object.png">
+<meta property="og:image" content="https://bigzuo.github.io/images/object-reference.png">
+<meta property="og:updated_time" content="2020-09-04T01:48:33.011Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一次频繁 Full GC 问题定位">
-<meta name="twitter:description" content="背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。 在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的">
-<meta name="twitter:image" content="http://yoursite.com/2020/09/03/full-gc-troubleshotting/images/object-overwiew.png">
+<meta name="twitter:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta name="twitter:image" content="https://bigzuo.github.io/images/object-overwiew.png">
 
 
 
@@ -340,12 +340,24 @@
                 
               
 
-              <time title="Created: 2020-09-03 21:06:47 / Modified: 21:29:07" itemprop="dateCreated datePublished" datetime="2020-09-03T21:06:47+08:00">2020-09-03</time>
+              <time title="Created: 2020-09-03 21:06:47" itemprop="dateCreated datePublished" datetime="2020-09-03T21:06:47+08:00">2020-09-03</time>
             
 
             
               
 
+              
+                
+                <span class="post-meta-divider">|</span>
+                
+
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                
+                  <span class="post-meta-item-text">Edited on</span>
+                
+                <time title="Modified: 2020-09-04 09:48:33" itemprop="dateModified" datetime="2020-09-04T09:48:33+08:00">2020-09-04</time>
               
             
           </span>
@@ -391,16 +403,20 @@
       
 
       
-        <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
+        <p>关键词：Full GC、Stop the world、request delay</p>
+<h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
 <h2 id="排查思路"><a href="#排查思路" class="headerlink" title="排查思路"></a>排查思路</h2><h3 id="分析已有-GC-日志"><a href="#分析已有-GC-日志" class="headerlink" title="分析已有 GC 日志"></a>分析已有 GC 日志</h3><p>针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。</p>
 <p>在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的内存空间非常少，或者几乎不回收，找到问题切入点。</p>
 <ul>
-<li>通过分析年轻代回收日志可以得知：老年代对象空间占用为：1398015K(堆整体使用空间) - 69888K(年轻代使用空间)=1328127K，约1297M;</li>
-<li>通过分析老年代<code>CMS Final Remark</code>阶段日志可以得知：老年代对象在 Full GC 后空间占用为：1328127K，约 1297M；和 Full GC 前一样；</li>
-<li>所以频繁 Full GC 的原因是因为老年代对象存活时间长、无法被有效回收，造成每次都空间不够，但是每次 Full GC 又释放不了空间，触发频繁 Full GC 恶性循环；</li>
+<li><p>通过分析年轻代回收日志可以得知：老年代对象空间占用为：1398015K(堆整体使用空间) - 69888K(年轻代使用空间)=1328127K，约1297M;</p>
+</li>
+<li><p>通过分析老年代<code>CMS Final Remark</code>阶段日志可以得知：老年代对象在 Full GC 后空间占用为：1328127K，约 1297M；和 Full GC 前一样；</p>
+</li>
+<li><p>所以频繁 Full GC 的原因是因为老年代对象存活时间长、无法被有效回收，造成每次都空间不够，但是每次 Full GC 又释放不了空间，触发频繁 Full GC 恶性循环；</p>
+<a id="more"></a>
+</li>
 </ul>
 <figure class="highlight verilog"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">20</span><span class="variable">.687</span>+<span class="number">0800</span>: <span class="number">15966</span><span class="variable">.728</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4434747</span> secs] <span class="number">1868694</span>K-&gt;<span class="number">1398015</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4438074</span> secs] [Times: user=<span class="number">0</span><span class="variable">.72</span> sys=<span class="number">0</span><span class="variable">.13</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.44</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.132</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.173</span>: [GC (CMS Initial Mark) [<span class="number">1</span> CMS-<span class="keyword">initial</span>-mark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1399079</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.0417353</span> secs] [Times: user=<span class="number">0</span><span class="variable">.08</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.05</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">21</span><span class="variable">.174</span>+<span class="number">0800</span>: <span class="number">15967</span><span class="variable">.215</span>: [CMS-concurrent-mark-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.579</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.620</span>: [CMS-concurrent-mark: <span class="number">1</span><span class="variable">.405</span>/<span class="number">1</span><span class="variable">.405</span> secs] [Times: user=<span class="number">1</span><span class="variable">.94</span> sys=<span class="number">1</span><span class="variable">.66</span>, <span class="keyword">real</span>=<span class="number">1</span><span class="variable">.40</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.621</span>: [CMS-concurrent-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-preclean: <span class="number">0</span><span class="variable">.105</span>/<span class="number">0</span><span class="variable">.107</span> secs] [Times: user=<span class="number">0</span><span class="variable">.16</span> sys=<span class="number">0</span><span class="variable">.14</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.11</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.686</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.727</span>: [CMS-concurrent-abortable-preclean: <span class="number">0</span><span class="variable">.000</span>/<span class="number">0</span><span class="variable">.000</span> secs] [Times: user=<span class="number">0</span><span class="variable">.00</span> sys=<span class="number">0</span><span class="variable">.00</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [GC (CMS Final Remark) [YG occupancy: <span class="number">402361</span> K (<span class="number">629120</span> K)]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.689</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.730</span>: [Rescan (parallel) , <span class="number">0</span><span class="variable">.2188447</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">weak</span> refs processing, <span class="number">0</span><span class="variable">.0004769</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">22</span><span class="variable">.908</span>+<span class="number">0800</span>: <span class="number">15968</span><span class="variable">.949</span>: [<span class="keyword">class</span> unloading, <span class="number">0</span><span class="variable">.1315975</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.040</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.081</span>: [scrub symbol <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0354223</span> secs]<span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.075</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.116</span>: [scrub <span class="keyword">string</span> <span class="keyword">table</span>, <span class="number">0</span><span class="variable">.0014160</span> secs][<span class="number">1</span> CMS-remark: <span class="number">1328127</span>K(<span class="number">1398144</span>K)] <span class="number">1730489</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.3881670</span> secs] [Times: user=<span class="number">0</span><span class="variable">.48</span> sys=<span class="number">0</span><span class="variable">.06</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.39</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.077</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.118</span>: [CMS-concurrent-sweep-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [GC (Allocation Failure) <span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">23</span><span class="variable">.872</span>+<span class="number">0800</span>: <span class="number">15969</span><span class="variable">.913</span>: [ParNew: <span class="number">629120</span>K-&gt;<span class="number">69888</span>K(<span class="number">629120</span>K), <span class="number">0</span><span class="variable">.4416855</span> secs] <span class="number">1611251</span>K-&gt;<span class="number">1164736</span>K(<span class="number">2027264</span>K), <span class="number">0</span><span class="variable">.4419973</span> secs] [Times: user=<span class="number">0</span><span class="variable">.78</span> sys=<span class="number">0</span><span class="variable">.08</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.45</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-sweep: <span class="number">2</span><span class="variable">.049</span>/<span class="number">2</span><span class="variable">.497</span> secs] [Times: user=<span class="number">3</span><span class="variable">.82</span> sys=<span class="number">2</span><span class="variable">.30</span>, <span class="keyword">real</span>=<span class="number">2</span><span class="variable">.50</span> secs]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.574</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.615</span>: [CMS-concurrent-reset-start]</span><br><span class="line"><span class="number">2020</span>-<span class="number">08</span>-<span class="number">17</span>T14:<span class="number">17</span>:<span class="number">25</span><span class="variable">.580</span>+<span class="number">0800</span>: <span class="number">15971</span><span class="variable">.621</span>: [CMS-concurrent-reset: <span class="number">0</span><span class="variable">.006</span>/<span class="number">0</span><span class="variable">.006</span> secs] [Times: user=<span class="number">0</span><span class="variable">.03</span> sys=<span class="number">0</span><span class="variable">.03</span>, <span class="keyword">real</span>=<span class="number">0</span><span class="variable">.00</span> secs]</span><br></pre></td></tr></table></figure>
-<a id="more"></a>
 <h3 id="复现问题验证猜测"><a href="#复现问题验证猜测" class="headerlink" title="复现问题验证猜测"></a>复现问题验证猜测</h3><p>单次通过 GC 日志分析的结论可能具有偶然性，不一定能精确定位问题。所以为了验证猜测，我们使用<code>jstat</code>命令实时查看 JVM 的垃圾回收状态，看看是否每次 Full GC 的现象和刚才分析的一致。</p>
 <p>我们在相同的环境，重新模拟了批量消息发送的场景。在消息发送期间，通过<code>jstat</code>命令发现，每次 Full GC 几乎都不能有效回收内存空间。如下显示：</p>
 <blockquote>
@@ -414,16 +430,16 @@
 <ul>
 <li>找到内存占用最大的对象类型。如图可见，<code>char[]</code> 是内存中占用空间最大的对象类型，共计有 496M，占用了 22.1% 的堆空间。</li>
 </ul>
-<p><img src="images/object-overwiew.png" alt="object-overwiew"></p>
+<p><img src="https://bigzuo.github.io/images/object-overwiew.png" alt="object-overwiew"></p>
 <ul>
 <li>在内存占用最大的对象类型中查找可疑对象。一般情况下，可疑对象很多，有可能需要输出多次内存堆栈、多次查找对比，才能定位问题对象。根据经验，一般出现大量相同对象，很有可能就是我们要找的问题对象。</li>
 </ul>
 <p>分析内存对象时，发现如下大量相同对象，且每个对象为 35k，明显属于超大对象，正常业务对象一般较小；很有可能它就是本次问题的元凶。</p>
-<p><img src="/images/largest-object.png" alt="largest-object"></p>
+<p><img src="https://bigzuo.github.io/images/largest-object.png" alt="largest-object"></p>
 <ul>
 <li>利用  <code>visualvm</code> 深入分析该对象的内容。通过对象的引用关系，发现这个对象和公司内部的一个监控埋点数据收集系统的 SDK 有关。</li>
 </ul>
-<p><img src="./images/object-reference.png" alt="object-reference"></p>
+<p><img src="https://bigzuo.github.io/images/object-reference.png" alt="object-reference"></p>
 <h3 id="从问题对象找到问题代码"><a href="#从问题对象找到问题代码" class="headerlink" title="从问题对象找到问题代码"></a>从问题对象找到问题代码</h3><p>根据引用关系查找问题代码。通过排查代码，发现如下可疑操作：长连接推送系统为了记录会话状态、用户在线信息等数据，会将相关数据暂存到 <code>LinkedBlockingQueue</code> 队列中，然后再异步发送到监控采集系统的 kafka 集群。<code>LinkedBlockingQueue</code>长度默认是 1w, 测试环境实际配置是 50w. 根据内存堆栈显示，一个相关对象为 35k, <code>LinkedBlockingQueue</code>存储1w 个这种对象，就会占用约 350M 内存。这些内容如果不能被及时消费，会一直存在于内存，无法被 GC 回收掉，进而会触发频繁 <code>full gc</code>，理论分析和实际 GC 现象一致。</p>
 <p>问题代码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">BlockingQueue 长度默认是 <span class="number">1</span>w，测试环境实际配置 <span class="number">50</span>w.<span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">traceSession</span><span class="params">(SocketUser socketUser, Date connectTime, Response response,<span class="keyword">long</span> middleTime1, <span class="keyword">long</span> middleTime2)</span> </span>&#123;</span><br><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">  ***</span></span><br><span class="line"><span class="comment">  **/</span></span><br><span class="line">  BaseKeepAliveInfo aliveInfo = <span class="keyword">new</span> BaseKeepAliveInfo();</span><br><span class="line">  aliveInfo.setType(metric.getType().getCode());</span><br><span class="line"></span><br><span class="line">  Map&lt;String, Object&gt; info = <span class="keyword">new</span> HashMap&lt;&gt;();</span><br><span class="line">  info.put(TraceConstants.Field.SESSION_ID.getCode(), socketUser.getSid());</span><br><span class="line">  info.put(TraceConstants.Field.DEVICE_ID.getCode(), socketUser.getDeviceId());</span><br><span class="line">  info.put(TraceConstants.Field.UID.getCode(), socketUser.getUid());</span><br><span class="line">  <span class="comment">// 省略无关代码</span></span><br><span class="line">  info.put(TraceConstants.Field.DISCONNECT_TIME.getCode(), disconnectTime);</span><br><span class="line">  info.put(TraceConstants.Field.CONNECT_COST.getCode(), disconnectTime - connectTime.getTime());</span><br><span class="line">  info.put(TraceConstants.Field.APPID.getCode(), socketUser.getAppId());</span><br><span class="line"></span><br><span class="line">  Map&lt;String, Object&gt; extra = TraceUtil.getExtra(response, socketUser);</span><br><span class="line">  extra.put(<span class="string">"middleTime1"</span>,middleTime1);</span><br><span class="line">  extra.put(<span class="string">"middleTime2"</span>,middleTime2);</span><br><span class="line"></span><br><span class="line">  info.put(TraceConstants.Field.EXTRA.getCode(), extra);</span><br><span class="line"></span><br><span class="line">  aliveInfo.setInfo(info);</span><br><span class="line">  getUploadQueue().add(aliveInfo); <span class="comment">// 问题代码入口</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> BlockingQueue&lt;BaseKeepAliveInfo&gt; <span class="title">getUploadQueue</span><span class="params">()</span> </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> uploadQueue;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> BlockingQueue&lt;BaseKeepAliveInfo&gt; uploadQueue = <span class="keyword">new</span> LinkedBlockingQueue&lt;&gt;(TraceUtil.getIntConfig(<span class="number">10000</span>); <span class="comment">//BlockingQueue 长度默认是 1w，测试环境实际配置 50w.</span></span><br></pre></td></tr></table></figure>
@@ -473,7 +489,7 @@
       
         <div class="post-tags">
           
-            <a href="/tags/JAVA-JVM/" rel="tag"># JAVA/JVM</a>
+            <a href="/tags/Java-JVM/" rel="tag"># Java/JVM</a>
           
         </div>
       
@@ -610,9 +626,7 @@
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-count">3</span>
                     <span class="site-state-item-name">tags</span>
                   
                 </div>

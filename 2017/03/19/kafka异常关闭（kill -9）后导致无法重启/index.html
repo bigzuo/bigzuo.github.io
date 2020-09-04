@@ -441,7 +441,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
 <h2 id="问题原因"><a href="#问题原因" class="headerlink" title="问题原因"></a>问题原因</h2><p>在系统升级前，我们需要停掉kafka broker，但是我们在停kafka 进程时，没有采用<strong>cleanShutDown</strong>的方式，而是直接使用了粗暴的<strong>“kill -9”</strong>结束了kafka进程，导致一些已经提交的日志在追加到硬盘时出现异常，即出现数据错误。然后当我们重启时，当加载到这些异常文件时，就出现异常，导致重启失败。</p>
 <h2 id="原理分析"><a href="#原理分析" class="headerlink" title="原理分析"></a>原理分析</h2><p>在kafka文件存储中，同一个topic一般都有多个partition，每个partition为一个目录，目录的命名规则为topic名称+partition序列号。而消息数据在每个partition内部都被顺序分配到几个大小相等的segment数据文件中。segment又由两部分组成，分别是文件后缀是“.index”的index file和后缀是“.log”的data file，这两个文件一一对应，分别表示索引文件和日志文件。segment存放文件的大小由broker 中<strong>server.properties</strong>配置文件中<strong>log.segment.bytes</strong>配置项决定的。<br>当broker收到producer发送过来的数据时，会将数据追加到所在partition中最新的segment文件中，如果该segment文件大小超过<strong>log.segment.bytes</strong>设置的值，服务器就会重新生成一个segment文件（即一对index文件和data文件），文件的名字就是上一个segment文件中最后一条消息的offset值，然后将数据追加（append）到新的segment文件中。在正常情况下，index文件和data文件是一一对应的，并且内容也是完全一一对应的。但是<br>操作在非<strong>cleanShutDown（kill -9）</strong>情况下， 一个<strong>log sement</strong>的<strong>log</strong>及<strong>index</strong>文件末尾可能写入一些不合法的数据(invalid)，导致broker重启时，加载index文件异常，进而导致进程关掉，无法重启的问题。</p>
 <h2 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h2><p>由于kafka是集群工作模式，在合理设置replicate的情况下，其他broker也会同步日志信息，所以我们直接清除掉异常broker对应<strong>log.dirs</strong>目录下的所有日志文件，再进行重启就能正常启动，并且这台机器也会从对应topic的其他ISR机器上同步历史日志文件。不过，<strong>在极端情况下，部分leader是在这台异常broker上的topic partition可能会丢失一些未同步的数据。</strong></p>
-<h2 id="反馈建议"><a href="#反馈建议" class="headerlink" title="反馈建议"></a>反馈建议</h2><p><strong>邮箱：</strong><a href="mailto:&#x62;&#105;&#x67;&#x7a;&#117;&#111;&#64;&#49;&#54;&#x33;&#x2e;&#99;&#111;&#109;" target="_blank" rel="noopener">&#x62;&#105;&#x67;&#x7a;&#117;&#111;&#64;&#49;&#54;&#x33;&#x2e;&#99;&#111;&#109;</a> </p>
+<h2 id="反馈建议"><a href="#反馈建议" class="headerlink" title="反馈建议"></a>反馈建议</h2><p><strong>邮箱：</strong><a href="mailto:&#x62;&#x69;&#x67;&#x7a;&#117;&#111;&#x40;&#49;&#x36;&#x33;&#46;&#99;&#111;&#109;" target="_blank" rel="noopener">&#x62;&#x69;&#x67;&#x7a;&#117;&#111;&#x40;&#49;&#x36;&#x33;&#46;&#99;&#111;&#109;</a> </p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://issues.apache.org/jira/browse/KAFKA-742" target="_blank" rel="noopener">Existing directories under the Kafka data directory without any data cause process to not start</a><br><a href="https://issues.apache.org/jira/browse/KAFKA-757" target="_blank" rel="noopener">System Test Hard Failure cases : “Fatal error during KafkaServerStable startup” when hard-failed broker is re-started</a><br><a href="https://issues.apache.org/jira/browse/KAFKA-340" target="_blank" rel="noopener">Implement clean shutdown in 0.8</a><br><a href="http://blog.csdn.net/jsky_studio/article/details/42012561" target="_blank" rel="noopener">Kafka重启出错：Corrupt index found</a><br><a href="http://tech.meituan.com/kafka-fs-design-theory.html" target="_blank" rel="noopener">Kafka文件存储机制那些事</a> </p>
 
       
@@ -601,9 +601,7 @@ java.lang.StringIndexOutOfBoundsException: String index out of range: -<span cla
                     
                       
                     
-                      
-                    
-                    <span class="site-state-item-count">4</span>
+                    <span class="site-state-item-count">3</span>
                     <span class="site-state-item-name">tags</span>
                   
                 </div>
