@@ -96,21 +96,21 @@
 
 
 
-  <meta name="description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+  <meta name="description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/ 关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日">
 <meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一次频繁 Full GC 问题定位">
 <meta property="og:url" content="http://yoursite.com/2020/09/03/full-gc-troubleshooting/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta property="og:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/ 关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://bigzuo.github.io/images/object-overwiew.png">
 <meta property="og:image" content="https://bigzuo.github.io/images/largest-object.png">
 <meta property="og:image" content="https://bigzuo.github.io/images/object-reference.png">
-<meta property="og:updated_time" content="2020-09-04T01:52:37.390Z">
+<meta property="og:updated_time" content="2020-09-04T02:37:38.526Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一次频繁 Full GC 问题定位">
-<meta name="twitter:description" content="关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日志针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异">
+<meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/ 关键词：Full GC、Stop the world、request delay 背景介绍最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。 排查思路分析已有 GC 日">
 <meta name="twitter:image" content="https://bigzuo.github.io/images/object-overwiew.png">
 
 
@@ -193,7 +193,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -357,7 +357,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-04 09:52:37" itemprop="dateModified" datetime="2020-09-04T09:52:37+08:00">2020-09-04</time>
+                <time title="Modified: 2020-09-04 10:37:38" itemprop="dateModified" datetime="2020-09-04T10:37:38+08:00">2020-09-04</time>
               
             
           </span>
@@ -421,7 +421,8 @@
       
 
       
-        <p>关键词：Full GC、Stop the world、request delay</p>
+        <p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+<p>关键词：Full GC、Stop the world、request delay</p>
 <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
 <h2 id="排查思路"><a href="#排查思路" class="headerlink" title="排查思路"></a>排查思路</h2><h3 id="分析已有-GC-日志"><a href="#分析已有-GC-日志" class="headerlink" title="分析已有 GC 日志"></a>分析已有 GC 日志</h3><p>针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。</p>
 <p>在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的内存空间非常少，或者几乎不回收，找到问题切入点。</p>

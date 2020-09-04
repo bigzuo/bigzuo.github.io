@@ -96,18 +96,18 @@
 
 
 
-  <meta name="description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+  <meta name="description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的">
 <meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
 <meta property="og:type" content="article">
 <meta property="og:title" content="为什么使用 Java Cipher 要指定转换模式？">
 <meta property="og:url" content="http://yoursite.com/2019/03/27/java-cipher-tutorial/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+<meta property="og:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-09-04T01:52:52.835Z">
+<meta property="og:updated_time" content="2020-09-04T02:38:18.474Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="为什么使用 Java Cipher 要指定转换模式？">
-<meta name="twitter:description" content="前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚">
+<meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  前提写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的">
 
 
 
@@ -189,7 +189,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -353,7 +353,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-04 09:52:52" itemprop="dateModified" datetime="2020-09-04T09:52:52+08:00">2020-09-04</time>
+                <time title="Modified: 2020-09-04 10:38:18" itemprop="dateModified" datetime="2020-09-04T10:38:18+08:00">2020-09-04</time>
               
             
           </span>
@@ -417,7 +417,10 @@
       
 
       
-        <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
+        <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] publicDecrypt(PublicKey publicKey, <span class="keyword">byte</span>[] encryptData) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">   <span class="keyword">byte</span>[] output;</span><br><span class="line">   Cipher cipher = Cipher.getInstance(<span class="string">"RSA"</span>);</span><br><span class="line">   cipher.init(Cipher.DECRYPT_MODE, publicKey);</span><br><span class="line">   output = cipher.doFinal(encryptData);</span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <a id="more"></a>
 <p>我自己遇到的问题是：我在应用程序中使用上面的代码加密一些数据，运行时间超过一年，一直运行正常。后来服务器升级了JDK版本，从JDK7升级到了JDK8（具体小版本不清楚，且后来发现异常和 JDK 版本升级无关）。后来应用实例在重启时，偶尔会有个别应用实例在重启后对相同的内容的加密结果和其他实例的结果不一致，并且其他应用实例在解密其加密结果时，会报如下异常：</p>

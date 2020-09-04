@@ -96,18 +96,18 @@
 
 
 
-  <meta name="description" content="NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location / &amp;#123;    if ($http_dest_ip != &amp;quot;&amp;quot;)">
+  <meta name="description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location /">
 <meta name="keywords" content="By bigzuo, bigzuo 的博客, bigzuo, Java,  微服务, NGINX">
 <meta property="og:type" content="article">
 <meta property="og:title" content="使用 Nginx 搭建 HTTPS 正向代理服务">
 <meta property="og:url" content="http://yoursite.com/2018/12/15/nginx-https-forward-proxy/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location / &amp;#123;    if ($http_dest_ip != &amp;quot;&amp;quot;)">
+<meta property="og:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location /">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-09-03T12:40:09.478Z">
+<meta property="og:updated_time" content="2020-09-04T02:39:31.661Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用 Nginx 搭建 HTTPS 正向代理服务">
-<meta name="twitter:description" content="NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location / &amp;#123;    if ($http_dest_ip != &amp;quot;&amp;quot;)">
+<meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  NGINX 搭建 HTTP 正向代理最近帮同事搭建一个代理服务器，要求当请求的请求头中包含dest_ip时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。 123456location /">
 
 
 
@@ -189,7 +189,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -353,7 +353,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:31" itemprop="dateModified" datetime="2020-09-04T10:39:31+08:00">2020-09-04</time>
               
             
           </span>
@@ -417,7 +417,10 @@
       
 
       
-        <h2 id="NGINX-搭建-HTTP-正向代理"><a href="#NGINX-搭建-HTTP-正向代理" class="headerlink" title="NGINX 搭建 HTTP 正向代理"></a>NGINX 搭建 HTTP 正向代理</h2><p>最近帮同事搭建一个代理服务器，要求当请求的请求头中包含<code>dest_ip</code>时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。</p>
+        <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="NGINX-搭建-HTTP-正向代理"><a href="#NGINX-搭建-HTTP-正向代理" class="headerlink" title="NGINX 搭建 HTTP 正向代理"></a>NGINX 搭建 HTTP 正向代理</h2><p>最近帮同事搭建一个代理服务器，要求当请求的请求头中包含<code>dest_ip</code>时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    if ($http_dest_ip != &quot;&quot;) &#123;</span><br><span class="line">        proxy_pass http://$http_dest_ip/$request_uri;</span><br><span class="line">    &#125;</span><br><span class="line">    proxy_pass https://$http_host$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <a id="more"></a>
 <p>NGINX 代理 HTTPS 请求时 <code>access</code> 日志：</p>

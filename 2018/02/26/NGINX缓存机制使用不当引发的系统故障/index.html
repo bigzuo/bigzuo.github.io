@@ -96,18 +96,18 @@
 
 
 
-  <meta name="description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+  <meta name="description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，">
 <meta name="keywords" content="NGINX&#x2F;Openresty">
 <meta property="og:type" content="article">
 <meta property="og:title" content="NGINX 缓存机制使用不当引发的系统故障">
 <meta property="og:url" content="http://yoursite.com/2018/02/26/NGINX缓存机制使用不当引发的系统故障/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+<meta property="og:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2020-09-03T12:40:09.475Z">
+<meta property="og:updated_time" content="2020-09-04T02:39:43.117Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="NGINX 缓存机制使用不当引发的系统故障">
-<meta name="twitter:description" content="Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。">
+<meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  Shared_dict 共享内存数据丢失近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，">
 
 
 
@@ -189,7 +189,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -353,7 +353,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:43" itemprop="dateModified" datetime="2020-09-04T10:39:43+08:00">2020-09-04</time>
               
             
           </span>
@@ -399,7 +399,10 @@
       
 
       
-        <h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
+        <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
 <a id="more"></a>  
 <p>Lua 功能逻辑如下：</p>
 <figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">--只统计400以上的返回异常</span></span><br><span class="line"><span class="keyword">if</span> <span class="built_in">status</span> &gt;= <span class="number">400</span> <span class="keyword">then</span> <span class="comment">--请求发生异常，HTTP code &gt; 400</span></span><br><span class="line">	count= shared_dict:get(cur_uri)</span><br><span class="line">    <span class="keyword">if</span> count == <span class="literal">nil</span> <span class="keyword">then</span></span><br><span class="line"><span class="number">1</span>、		shared_dict:set(cur_uri,<span class="number">1</span>)</span><br><span class="line"><span class="number">2</span>、		shared_dict:set(uri_last_decay_time_key,os_cur_time)</span><br><span class="line">		count = <span class="number">1</span></span><br><span class="line">	<span class="keyword">else</span></span><br><span class="line">	<span class="comment">--获取当前异常次数的值</span></span><br><span class="line"><span class="number">3</span>、		count = shared_dict:incr(cur_uri,<span class="number">1</span>)  <span class="comment">--异常次数加 1</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="number">4</span>、	<span class="keyword">if</span> count &gt;= <span class="built_in">tonumber</span>(max_fail_time) <span class="keyword">then</span>  <span class="comment">-- 如果异常次数超过阀值，则将该请求加入到黑名单中，执行过载策略。</span></span><br><span class="line">		ngx.<span class="built_in">log</span>(ngx.ERR, <span class="string">"nginx current request uri:"</span>, uri,<span class="string">" fail time is up to the max_fail_time,and will be added to black_list."</span>)</span><br><span class="line">		shared_dict:set(black_list_key,<span class="number">1</span>,black_list_time) <span class="comment">-- 将该请求加入异常黑名单</span></span><br><span class="line"><span class="number">5</span>、		shared_dict:delete(cur_uri)  <span class="comment">-- 请求加入黑名单后，会将 count 的值清空。</span></span><br><span class="line"><span class="number">6</span>、		shared_dict:delete(uri_last_decay_time_key)  <span class="comment">-- 然后也会将最近一次衰减时间点 last_decay_time的值清空。</span></span><br><span class="line">		<span class="keyword">return</span></span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="number">7</span>、	<span class="keyword">local</span> <span class="built_in">time</span> = shared_dict:get(uri_last_decay_time_key)<span class="comment">-- 获取最近一次衰减时间 last_decay_time，由于 last_decay_time的值被清空，所以此处取的time 值也是空。</span></span><br><span class="line"><span class="number">8</span>、	<span class="built_in">time</span> = os_cur_time-<span class="built_in">time</span>  <span class="comment">-- 由于time的值为空，导致在进行算术运算时，报空指针异常。异常信息见下文。</span></span><br><span class="line">	<span class="keyword">if</span> <span class="built_in">time</span> &gt;= <span class="built_in">tonumber</span>(decay_time) <span class="keyword">then</span></span><br><span class="line">		<span class="comment">--math.ceil()函数用户取整</span></span><br><span class="line"><span class="number">9</span>、		count = <span class="built_in">math</span>.<span class="built_in">ceil</span>(count/<span class="number">2</span>)  <span class="comment">-- 由于上面算术运算异常，导致这里一直不会执行，即count的值一直不会衰减，因此也会一直累加。知道达到阀值，被加入黑名单。</span></span><br><span class="line">		ngx.<span class="built_in">log</span>(ngx.DEBUG, <span class="string">"nginx current request uri:"</span>, uri,<span class="string">" fail time was be decayed,current count:"</span>, count)</span><br><span class="line">		shared_dict:set(cur_uri,count)</span><br><span class="line">		shared_dict:set(uri_last_decay_time_key,os_cur_time)</span><br><span class="line">	<span class="keyword">end</span></span><br><span class="line"><span class="keyword">end</span></span><br></pre></td></tr></table></figure>

@@ -96,19 +96,19 @@
 
 
 
-  <meta name="description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先我们检查了JVM参数配置，具体参数如下：   1-Xms768M -Xmx768M -X">
+  <meta name="description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先">
 <meta name="keywords" content="Java&#x2F;JVM">
 <meta property="og:type" content="article">
 <meta property="og:title" content="为什么Java GC耗时这么长？">
 <meta property="og:url" content="http://yoursite.com/2017/07/16/why-gc-last-so-long/index.html">
 <meta property="og:site_name" content="Bigzuo`s Blog">
-<meta property="og:description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先我们检查了JVM参数配置，具体参数如下：   1-Xms768M -Xmx768M -X">
+<meta property="og:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先">
 <meta property="og:locale" content="zh-Hans">
 <meta property="og:image" content="https://bigzuo.coding.me/bigzuo/images/java_meminfo.png">
-<meta property="og:updated_time" content="2020-09-03T12:40:09.478Z">
+<meta property="og:updated_time" content="2020-09-04T02:40:06.309Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="为什么Java GC耗时这么长？">
-<meta name="twitter:description" content="是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先我们检查了JVM参数配置，具体参数如下：   1-Xms768M -Xmx768M -X">
+<meta name="twitter:description" content="原创文章，如需转载，请注明来自：https://bigzuo.github.io/  是什么导致请求响应很慢？最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。   首先">
 <meta name="twitter:image" content="https://bigzuo.coding.me/bigzuo/images/java_meminfo.png">
 
 
@@ -191,7 +191,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -355,7 +355,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:40:06" itemprop="dateModified" datetime="2020-09-04T10:40:06+08:00">2020-09-04</time>
               
             
           </span>
@@ -401,7 +401,10 @@
       
 
       
-        <h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
+        <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
 <p>首先我们检查了JVM参数配置，具体参数如下：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms768M -Xmx768M -XX:MaxNewSize=256m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC -XX:+PrintGCTimeStamps -verbose:gc -Xloggc:logs/gc.log</span><br></pre></td></tr></table></figure>
 <p>我们服务器配置是1核2G，实际可用空间是1.7G，因此结合我们的JVM配置，发现当前配置并无不合理之处。并且测试环境应用请求量并不大，所以也解释不了请求卡顿的原因。<br><a id="more"></a><br>然后，我们就查看了一下GC日志。结果从GC日志中发现应用在新生代垃圾回收时，耗时很长，因此造成服务长时间停顿。从下面的日志可以看出，<strong>一次新生代垃圾回收，居然耗时84.6s</strong>。  </p>

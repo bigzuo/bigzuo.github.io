@@ -189,7 +189,7 @@
     </div>
     
       
-        <p class="site-subtitle">bigzuo 的博客 | Bigzuo`s Blog</p>
+        <p class="site-subtitle">bigzuo 的博客 | Bigzuo's Blog</p>
       
     
     
@@ -540,7 +540,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-04 09:52:37" itemprop="dateModified" datetime="2020-09-04T09:52:37+08:00">2020-09-04</time>
+                <time title="Modified: 2020-09-04 10:37:38" itemprop="dateModified" datetime="2020-09-04T10:37:38+08:00">2020-09-04</time>
               
             
           </span>
@@ -605,7 +605,8 @@
 
       
         
-          <p>关键词：Full GC、Stop the world、request delay</p>
+          <p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+<p>关键词：Full GC、Stop the world、request delay</p>
 <h2 id="背景介绍"><a href="#背景介绍" class="headerlink" title="背景介绍"></a>背景介绍</h2><p>最近公司新上线的一个长连接推送系统，在推送消息量增大时会出现频繁 Full GC, 应用响应也开始变慢。考虑这可能是一个典型的异常 Full GC 问题，所以就记录下整个问题排查过程，以便事后参考。</p>
 <h2 id="排查思路"><a href="#排查思路" class="headerlink" title="排查思路"></a>排查思路</h2><h3 id="分析已有-GC-日志"><a href="#分析已有-GC-日志" class="headerlink" title="分析已有 GC 日志"></a>分析已有 GC 日志</h3><p>针对任何 GC 问题，第一件事就应该是查看线上 GC 日志，从 GC 日志中发现异常和突破口。</p>
 <p>在分析已有 GC 日志时，发现每次 Full GC 时，老年代回收的内存空间非常少，或者几乎不回收，找到问题切入点。</p>
@@ -740,7 +741,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-04 09:52:52" itemprop="dateModified" datetime="2020-09-04T09:52:52+08:00">2020-09-04</time>
+                <time title="Modified: 2020-09-04 10:38:18" itemprop="dateModified" datetime="2020-09-04T10:38:18+08:00">2020-09-04</time>
               
             
           </span>
@@ -805,7 +806,10 @@
 
       
         
-          <h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="前提"><a href="#前提" class="headerlink" title="前提"></a>前提</h2><p>写过 Java 程序的同学一定熟悉类似下面的代码：用 Java 加密、解密一些数据。这段代码是如此通用，以至于几乎在每个 Java 项目中都能发现它的身影。但是几乎大部分见过甚至是亲自写过这段代码的人也不一定清楚它的具体含义和运行方式，当有一天发现它运行和预期不一致时，也只是在网上 copy 另外一段类似的代码解决问题。这也是我之前处理这段代码的方式，直到最近遇到一个诡异的问题，才下决心搞清楚它的具体含义。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">byte</span>[] publicDecrypt(PublicKey publicKey, <span class="keyword">byte</span>[] encryptData) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">   <span class="keyword">byte</span>[] output;</span><br><span class="line">   Cipher cipher = Cipher.getInstance(<span class="string">"RSA"</span>);</span><br><span class="line">   cipher.init(Cipher.DECRYPT_MODE, publicKey);</span><br><span class="line">   output = cipher.doFinal(encryptData);</span><br><span class="line">   <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
@@ -932,7 +936,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:31" itemprop="dateModified" datetime="2020-09-04T10:39:31+08:00">2020-09-04</time>
               
             
           </span>
@@ -997,7 +1001,10 @@
 
       
         
-          <h2 id="NGINX-搭建-HTTP-正向代理"><a href="#NGINX-搭建-HTTP-正向代理" class="headerlink" title="NGINX 搭建 HTTP 正向代理"></a>NGINX 搭建 HTTP 正向代理</h2><p>最近帮同事搭建一个代理服务器，要求当请求的请求头中包含<code>dest_ip</code>时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。</p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="NGINX-搭建-HTTP-正向代理"><a href="#NGINX-搭建-HTTP-正向代理" class="headerlink" title="NGINX 搭建 HTTP 正向代理"></a>NGINX 搭建 HTTP 正向代理</h2><p>最近帮同事搭建一个代理服务器，要求当请求的请求头中包含<code>dest_ip</code>时，就将请求转发到这个目的地址，否则就正常请求。当自己用下面这种方式很快就实现 HTTP 正向代理，信心满满的交给同事使用时，却发现这种配置无法正常代理 HTTPS 请求。</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">location / &#123;</span><br><span class="line">    if ($http_dest_ip != &quot;&quot;) &#123;</span><br><span class="line">        proxy_pass http://$http_dest_ip/$request_uri;</span><br><span class="line">    &#125;</span><br><span class="line">    proxy_pass https://$http_host$request_uri;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
@@ -1124,7 +1131,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:08" itemprop="dateModified" datetime="2020-09-04T10:39:08+08:00">2020-09-04</time>
               
             
           </span>
@@ -1171,7 +1178,10 @@
 
       
         
-          <p>关键词：GC Overhead Limit Reached、CPU burst、Spring boot metrics</p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<p>关键词：GC Overhead Limit Reached、CPU burst、Spring boot metrics</p>
 <p>公司在基于 Spring Cloud 框架的微服务改造过程中，遇到如下问题：当把之前稳定运行在 Spring 3 框架上的业务代码迁移到 Spring Cloud 框架上之后，系统在运行几天后，CPU 的使用率会逐渐增加， GC 频率也会越来越快，最后 CPU 使用率接近100%，GC 每秒钟至少回收超过1G 的新生代对象，系统响应也变的非常慢。</p>
           <!--noindex-->
           
@@ -1298,7 +1308,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:20" itemprop="dateModified" datetime="2020-09-04T10:39:20+08:00">2020-09-04</time>
               
             
           </span>
@@ -1363,7 +1373,10 @@
 
       
         
-          <h2 id="NGINX-处理转发请求时报错"><a href="#NGINX-处理转发请求时报错" class="headerlink" title="NGINX 处理转发请求时报错"></a>NGINX 处理转发请求时报错</h2><p>最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：  </p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="NGINX-处理转发请求时报错"><a href="#NGINX-处理转发请求时报错" class="headerlink" title="NGINX 处理转发请求时报错"></a>NGINX 处理转发请求时报错</h2><p>最近在做一个需求时，NGINX 出现了 400 异常。具体细节如下：有两台独立的 NGINX，每一台 NGINX 都能正常的处理请求。但是当我用 lua 脚本，将一台 NGINX 接收到的请求筛选后，转发给另外一台 NGINX 处理时，收到如下 400 响应：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">HTTP/1.1 400 Bad Request</span><br><span class="line">Server: openresty/1.11.2.2</span><br><span class="line">Date: Mon, 06 Aug 2018 13:36:20 GMT</span><br><span class="line">Content-Type: text/html</span><br><span class="line">Content-Length: 179</span><br><span class="line">Connection: close</span><br><span class="line"> </span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;&lt;title&gt;400 Bad Request&lt;/title&gt;&lt;/head&gt;</span><br><span class="line">&lt;body bgcolor=&quot;white&quot;&gt;</span><br><span class="line">&lt;center&gt;&lt;h1&gt;400 Bad Request&lt;/h1&gt;&lt;/center&gt;</span><br><span class="line">&lt;hr&gt;&lt;center&gt;openresty/1.11.2.2&lt;/center&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
           
@@ -1490,7 +1503,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:39:43" itemprop="dateModified" datetime="2020-09-04T10:39:43+08:00">2020-09-04</time>
               
             
           </span>
@@ -1537,7 +1550,10 @@
 
       
         
-          <h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="Shared-dict-共享内存数据丢失"><a href="#Shared-dict-共享内存数据丢失" class="headerlink" title="Shared_dict 共享内存数据丢失"></a>Shared_dict 共享内存数据丢失</h2><p>近期突然发生一起很久之前上线的 NGINX lua 功能出现了空指针异常引发的系统故障，该 ngx_lua 模块的功能是统计 NGINX 接收到的 upstream 模块返回的异常请求信息，如果某个接口异常响应次数太多，则就执行对应的过载限流策略。这个功能已上线半年有余，且发生故障时确认过相关配置都没有任何修改。</p>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -1663,7 +1679,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:40:06" itemprop="dateModified" datetime="2020-09-04T10:40:06+08:00">2020-09-04</time>
               
             
           </span>
@@ -1710,7 +1726,10 @@
 
       
         
-          <h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
+          <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="是什么导致请求响应很慢？"><a href="#是什么导致请求响应很慢？" class="headerlink" title="是什么导致请求响应很慢？"></a>是什么导致请求响应很慢？</h2><p>最近公司的一个系统测试环境上了部分新功能后，发现测试环境服务响应很慢，很多没有任何业务逻辑功能的请求，响应也会超过10s。我们对代码加上性能日志后，发现请求的处理会莫名的“卡住”，而不是因为在等待资源产生的停顿。我们在排除掉代码的原因后，开始分析JVM参数和服务器配置是否合理。  </p>
 <p>首先我们检查了JVM参数配置，具体参数如下：  </p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-Xms768M -Xmx768M -XX:MaxNewSize=256m -XX:MaxPermSize=128m -XX:+UseConcMarkSweepGC -XX:+PrintGCTimeStamps -verbose:gc -Xloggc:logs/gc.log</span><br></pre></td></tr></table></figure>
 <p>我们服务器配置是1核2G，实际可用空间是1.7G，因此结合我们的JVM配置，发现当前配置并无不合理之处。并且测试环境应用请求量并不大，所以也解释不了请求卡顿的原因。<br>
@@ -2033,7 +2052,7 @@
                 
                   <span class="post-meta-item-text">Edited on</span>
                 
-                <time title="Modified: 2020-09-03 20:40:09" itemprop="dateModified" datetime="2020-09-03T20:40:09+08:00">2020-09-03</time>
+                <time title="Modified: 2020-09-04 10:37:53" itemprop="dateModified" datetime="2020-09-04T10:37:53+08:00">2020-09-04</time>
               
             
           </span>
@@ -2099,7 +2118,10 @@
       
         
           
-            <h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
+            <blockquote>
+<p>原创文章，如需转载，请注明来自：<a href="https://bigzuo.github.io/" target="_blank" rel="noopener">https://bigzuo.github.io/</a></p>
+</blockquote>
+<h2 id="什么是类加载器"><a href="#什么是类加载器" class="headerlink" title="什么是类加载器"></a>什么是类加载器</h2><h2 id="JVM类加载机制"><a href="#JVM类加载机制" class="headerlink" title="JVM类加载机制"></a>JVM类加载机制</h2><h2 id="Tomcat类加载机制"><a href="#Tomcat类加载机制" class="headerlink" title="Tomcat类加载机制"></a>Tomcat类加载机制</h2><h3 id="Tomcat-类加载顺序和时间"><a href="#Tomcat-类加载顺序和时间" class="headerlink" title="Tomcat 类加载顺序和时间"></a>Tomcat 类加载顺序和时间</h3><h2 id="线程类加载器"><a href="#线程类加载器" class="headerlink" title="线程类加载器"></a>线程类加载器</h2><h2 id="类加载器和容器"><a href="#类加载器和容器" class="headerlink" title="类加载器和容器"></a>类加载器和容器</h2><h2 id="什么是签名（signature）"><a href="#什么是签名（signature）" class="headerlink" title="什么是签名（signature）"></a>什么是签名（signature）</h2><h2 id="理解类加载器的作用"><a href="#理解类加载器的作用" class="headerlink" title="理解类加载器的作用"></a>理解类加载器的作用</h2><p>接口A，类B实现接口A。A和B由不同类加载器加载，会有什么问题？</p>
 <p>什么是SPI？SPI类加载机制？动手实现？</p>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><p><a href="https://tomcat.apache.org/tomcat-8.0-doc/class-loader-howto.html" target="_blank" rel="noopener">Tomcat 8: Class Loader HOW-TO</a><br><a href="https://yq.aliyun.com/articles/2890" target="_blank" rel="noopener">深入浅出ClassLoader（译）</a><br><a href="https://www.zhihu.com/question/38472316/answer/79729218" target="_blank" rel="noopener">java的反射通过类名加载类和ClassLoader通过类名加载类有什么区别？</a><br><a href="https://www.ibm.com/developerworks/cn/java/j-lo-classloader/" target="_blank" rel="noopener">深入探讨 Java 类加载器</a><br><a href="http://wiki.metawerx.net/wiki/JARFilesYouShouldNeverIncludeInYourWebapp" target="_blank" rel="noopener">JAR files you should never include in your web-app</a><br><a href="http://shuhucy.iteye.com/blog/1900231" target="_blank" rel="noopener">Tomcat启动时类加载顺序及运行时类载入顺序</a><br><a href="http://wiki.jikexueyuan.com/project/tomcat/classloading.html" target="_blank" rel="noopener">Tomcat 8 类加载机制</a><br><a href="http://www.cnblogs.com/xing901022/p/4574961.html" target="_blank" rel="noopener">图解Tomcat类加载机制</a><br><a href="https://developer.mozilla.org/en-US/docs/Glossary/Signature/Function" target="_blank" rel="noopener">Signature (functions)</a><br><a href="http://stackoverflow.com/questions/244482/how-to-deal-with-linkageerrors-in-java" target="_blank" rel="noopener">How to deal with LinkageErrors in Java?</a><br><a href="http://tcljava.sourceforge.net/docs/TclJava/JavaSignatures.html" target="_blank" rel="noopener">Java Signatures</a><br><a href="http://stackoverflow.com/questions/1993493/error-servlet-jar-not-loaded-offending-class-javax-servlet-servlet-class" target="_blank" rel="noopener">Error: Servlet Jar not Loaded… Offending class: javax/servlet/Servlet.class</a><br><a href="http://blog.csdn.net/yangcheng33/article/details/52631940#reply" target="_blank" rel="noopener">真正理解线程上下文类加载器（多案例分析）</a></p>
 
